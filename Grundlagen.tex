@@ -1,0 +1,37 @@
+\chapter{Grundlagen}
+\label{sec:Grundlagen}
+
+Begriffe und Zusammenhänge
+
+Multicore - Multithread \cite{GARCIA}
+
+SIMD(Single Instruction Multiple Data) Selbe Instruktion arbeitet mit mehreren Daten aus Pool.
+
+interquery Parallelismus - Anzahl Queries die pareallel ausgeführt werden können \cite{HUBER}
+
+interoperator Parallelismus - 
+
+intraoperator  Parallelismus
+
+
+\section{Multicore}
+\label{sec:Multicore}
+
+\subsection*{Vorteile}
+\label{sec:Multicore_Vorteile}
+
+Geteilter Cache:
+Leistungsgewinn - Ein Thread bereitet Daten für einen anderen Thread vor
+Potentiale für Leistungsverbesserung
+
+\subsection*{Schwierigkeiten}
+\label{sec:Multicore_Schwierigkeiten}
+
+Problem der größeren Verwaltung bei mehreren Prozessoren. Parallelität erzeugt größere Gefahr von Inkonsistenzen und Wartezustände, bei denen ein Thread auf den anderen warten muss, da beide die selben Daten bearbeiten wollen.
+
+\section{Datenbank Operationen}
+\label{sec:Operationen}
+
+Insert, update, delete, join, sort kurz beschreiben mit bezug auf die Verwendung und optimierung durch Multi-Core Einsatz. Dient als einleitung/aussortierung der Operationen, die uninteressant sind in ihrer Betrachtung.
+
+Hash-Join ist eine der wichtigsten Operationen in DBMS

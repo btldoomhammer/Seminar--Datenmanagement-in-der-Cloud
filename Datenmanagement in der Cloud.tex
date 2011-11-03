@@ -1,0 +1,45 @@
+
+\input{Header}
+
+\begin{document}
+
+\input{Titelseite}
+
+% 1.5-facher Zeilenabstand
+\onehalfspacing
+
+%\input{Abstract}
+
+% Inhaltsverzeichnis
+\tableofcontents
+
+% Abbildungsverzeichnis
+%\listoffigures
+%\addcontentsline{toc}{section}{Abbildungsverzeichnis}
+
+% Tabellenverzeichnis
+%\listoftables
+%\addcontentsline{toc}{section}{Tabellenverzeichnis}
+
+% Der eigentliche Inhalt
+\input{Abstract}
+\input{Einleitung}
+\input{Grundlagen}
+\input{Algorithmen}
+\input{Ausblick}
+
+\appendix
+\input{Anhang}
+\newpage
+
+\nocite{*} % Auch nicht zitierte Literatur aufführen
+
+% Literaturverzeichnis soll im Inhaltsverzeichnis auftauchen
+\clearpage
+\phantomsection % Hyperlink vom Inhaltsverzeichnis zum Literaturverzeichnis
+\addcontentsline{toc}{chapter}{Literaturverzeichnis}
+% Literaturverzeichnis anzeigen
+\bibliography{literatur}
+
+\end{document}
+

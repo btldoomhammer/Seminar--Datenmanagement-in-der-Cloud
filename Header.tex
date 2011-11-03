@@ -1,0 +1,84 @@
+\documentclass[
+  a4paper,
+  12pt,
+  oneside, % Einseitig bedruckt
+  openany, % Kapitel dürfen auf jeder Seite beginnen, nicht nur auf auf der rechten
+  final    % final, draft
+]{scrreprt}
+
+% Deutsche Silbentrennung
+\usepackage[ngerman]{babel}
+% Deutsche Umlaute
+\usepackage[ansinew]{inputenc}
+% Verwendung von T1-Schriften (zusätzliche Textsymbole)
+\usepackage[T1]{fontenc}
+% Ermöglicht Zugriff auf Textsymbole
+\usepackage{textcomp}
+
+% Zeilenabstand
+\usepackage{setspace}
+
+% Verbesserter Mathesatz
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+
+% Quellcode-Listings
+\usepackage{listings}
+
+% Zum einbinden von Grafiken
+\usepackage{graphicx}
+
+% zum festen plazieren von Grafiken
+\usepackage{here} 
+
+% Um Abbildungen aus Unterabbildungen zusammenzusetzen
+\usepackage{subfig}
+
+% BibTex
+\usepackage{bibgerm}
+
+% Literaturstyle
+\bibliographystyle{geralpha}
+
+\usepackage{color}							% Farbendefinitionen
+\definecolor{mygray}{gray}{.85} % Graue Farbe definieren
+\definecolor{mygreen}{rgb}{.1,.5,.2} % Dunkelgrüne Farbe definieren
+
+\lstset{												% Definieren des Quellcodes
+		language=c++,
+		numbers=left,
+		showstringspaces=false,
+		breaklines=true,
+		numbers=left,
+		numberstyle=\small,
+		backgroundcolor={\color{mygray}},
+		basicstyle=\sffamily\scriptsize,
+		keywordstyle={\color{blue}\bfseries},
+		commentstyle={\color{mygreen}\slshape},
+		stringstyle={\color{red}},
+		%frame=single
+}
+
+% URL-Verlinkung und Metadaten in PDF-Dateien
+\usepackage [
+  bookmarks=true,         % Show bookmarks bar?
+  unicode=false,          % Non-Latin characters in Acrobat’s bookmarks
+  pdftoolbar=true,        % Show Acrobat’s toolbar?
+  pdfmenubar=true,        % Show Acrobat’s menu?
+  pdffitwindow=false,     % Window fit to page when opened
+  pdfstartview={XYZ null null 1}, % FitH fits the width of the page to the window
+  pdftitle={MPSE Abschlussbericht SS11},    % Title
+  pdfauthor={Christian Dirks, Stephan Gimbel, Sebastian Paul, Kai-Alexander Schubert}, % Author
+  pdfsubject={MPSE Abschlussbericht SS11}, % Subject of the document
+  pdfcreator={LaTeX},     % Creator of the document
+  pdfproducer={Producer}, % Producer of the document
+  pdfkeywords={keywords}, % List of keywords
+  pdfnewwindow=true,      % Links in new window
+  colorlinks=true,        % False: boxed links; true: colored links
+  linkcolor=black,        % Color of internal links
+  citecolor=black,        % Color of links to bibliography
+  filecolor=blue,         % Color of file links
+  urlcolor=blue           % Color of external links
+ ]{hyperref}
+ 

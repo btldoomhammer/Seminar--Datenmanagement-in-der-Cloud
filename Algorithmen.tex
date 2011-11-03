@@ -1,0 +1,68 @@
+\chapter{Algorithmen}
+\label{sec:Algorithmen}
+
+Verbesserungsideen: entnommen aus \cite{SALOMIE}
+
+Einsatz dynamischer programmier-optimierung
+
+einsatz von hilfs-prozessoren für pre-fetch data
+
+\section{Cache Optimierung}
+\label{sec:Algorithmen_Cache-Optimierung}
+
+
+%\section{Minimalizing Cache Conflict}
+
+\cite{LEE}
+
+
+\section{Join Operationen}
+\label{sec:Join}
+
+Index-Join in Zukunft schneller als Hash-Joins \cite{KIM}
+
+\subsection{Architecture Aware Hash-Join}
+\label{sec:AA-Hash-Join}
+
+Architecture Aware Hash-Join (AA-HJ) \cite{RASHID}
+
+Daten werden im Speicher gehalten und kritische Daten auf Cache-Ebene werden verteilt. Verteilt in gleichen Teilen auf die Threads. Reduzierung der L2-Cache Miss-Rate(ca 80%).
+
+\section{Sort Operationen}
+\label{sec:Algorithmen_Sort}
+
+Großes Problem/Leistungsverlust auf modernen CPUs durch Pipeline Abbrüche.
+
+\subsection{AA-Sort}
+\label{sec:Sort_2_AA-Sort}
+
+AA-Sort \cite{INOUE} ist aufgeteilt in in-Core Sortierung und out-of-Core Sortierung. In-Core sortiert unter zuhilfename von Cache, out-of-Core macht vorsortierung in blöcke, die in cache passen und macht ein merg mit den vom Core sortierten Blöcken.
+
+Kein Datenbank-Spezifischer Algorithmus aber ausnutzung mehrerer Cores und kann auch für DB-Anwendungen verwendet werden.
+
+Sehr gut auf steigende Core-Zahlen skalierbar.
+
+Ausnutzung der SIMD (single instruction multiple data) Anweisungen.
+
+Schlägt existierende Sortierungs-Algorithmen in Leistung.
+
+O(n log(n))
+
+Ablauf: (1)Teile Daten in Blöcke die in den CPU Cache passen.
+(2) Sortieren auf CPU mit in-Core Sortierungs-Algorithmus.
+(3) Mergen der Sortierten Blocke mit dem out-of-Core Algorithmus
+
+\subsubsection*{In-Core Sortierung}
+\label{sec:In-Core_Sortierung}
+
+Basiert auf combsort \cite{LACEY}, einer Verbesserung von Bubble-Sort.
+
+\section{Evaluation}
+\label{sec:Evaluation}
+
+Allgemeine betrachtung und bewertung, welche Probleme und wie stark die Nutzung von Multicore ist und wieviel Leistung gewonnen wird. Aufwand/Nutzen
+
+%\section{Aggregation}
+%\label{sec:Aggregation}
+
+%Shared Hash Tables vs multiple Hash Tables for each core ... \cite{CIESLEWICZ} (Vielleicht ein interessantes Paper ... )
