@@ -4,26 +4,26 @@
 \section{Zusammenfassung}
 \label{sec:Zusammenfassung}
 
-\section{Andere Ansätze}
-\label{sec:AndereAnsätze}
+\section{Andere Ansatze}
+\label{sec:AndereAnsatze}
 
 \subsection{Mehrere Datenbank-Engines}
 \label{sec:DBEngines}
 
-modularisierte DB-Engine in möglichst voneinander unabhängig operierende teile, so dass jeder Zeil seine Daten direkt in seiner nähe halten kann
+modularisierte DB-Engine in mÃ¶glichst voneinander unabhÃ¤ngig operierende teile, so dass jeder Zeil seine Daten direkt in seiner nÃ¤he halten kann
 
-Mehrere Repliken einer Datenbank Anwendung für jeden Core, betrachten der Anwendung als eine vernetzte DB, trotz der verwendung auf nur einem PC, und dann einsatz der bereits in distributed DBs verwendeten optimierungen und techniken. Betrachtung eines Multi-Core-Systems wie ein Cluster von DB-Systemen.
+Mehrere Repliken einer Datenbank Anwendung fÃ¼r jeden Core, betrachten der Anwendung als eine vernetzte DB, trotz der verwendung auf nur einem PC, und dann einsatz der bereits in distributed DBs verwendeten optimierungen und techniken. Betrachtung eines Multi-Core-Systems wie ein Cluster von DB-Systemen.
 
 \subsection{Network-Processors}
 \label{sec:Network-Processors}
 
-Nutzen eines Network-Processors \cite{GOLD}, also spezieller Hardware ??? Mappen der Threads auf die Hardware, unabhängige Threads bevorzugt. Sind Threads voneinander abhängig, Verwaltung der Threads möglichst auf der selben Rechnereinheit.
+Nutzen eines Network-Processors \cite{GOLD}, also spezieller Hardware ??? Mappen der Threads auf die Hardware, unabhÃ¤ngige Threads bevorzugt. Sind Threads voneinander abhÃ¤ngig, Verwaltung der Threads mÃ¶glichst auf der selben Rechnereinheit.
 
 \subsection{GPU}
 \label{sec:GPU}
 
-Einsatz von GPUs für Datenbank-Operationen. zB Einsatz von CUDA.
+Einsatz von GPUs fÃ¼r Datenbank-Operationen. zB Einsatz von CUDA.
 
-Hohe Parallelität der GPUs ausnutzen
+Hohe ParallelitÃ¤t der GPUs ausnutzen
 
 Hohe Kosten von Datentransfer von CPU zu GPU, geringer GPU-Speicher,

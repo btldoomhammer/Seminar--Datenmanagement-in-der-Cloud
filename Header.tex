@@ -2,17 +2,17 @@
   a4paper,
   12pt,
   oneside, % Einseitig bedruckt
-  openany, % Kapitel dürfen auf jeder Seite beginnen, nicht nur auf auf der rechten
+  openany, % Kapitel dÃ¼rfen auf jeder Seite beginnen, nicht nur auf auf der rechten
   final    % final, draft
 ]{scrreprt}
 
 % Deutsche Silbentrennung
 \usepackage[ngerman]{babel}
 % Deutsche Umlaute
-\usepackage[ansinew]{inputenc}
-% Verwendung von T1-Schriften (zusätzliche Textsymbole)
-\usepackage[T1]{fontenc}
-% Ermöglicht Zugriff auf Textsymbole
+\usepackage[utf8]{inputenc}
+% Verwendung von T1-Schriften (zusÃ¤tzliche Textsymbole)
+%\usepackage[T1]{fontenc}
+% ErmÃ¶glicht Zugriff auf Textsymbole
 \usepackage{textcomp}
 
 % Zeilenabstand
@@ -43,7 +43,7 @@
 
 \usepackage{color}							% Farbendefinitionen
 \definecolor{mygray}{gray}{.85} % Graue Farbe definieren
-\definecolor{mygreen}{rgb}{.1,.5,.2} % Dunkelgrüne Farbe definieren
+\definecolor{mygreen}{rgb}{.1,.5,.2} % DunkelgrÃ¼ne Farbe definieren
 
 \lstset{												% Definieren des Quellcodes
 		language=c++,
@@ -63,9 +63,9 @@
 % URL-Verlinkung und Metadaten in PDF-Dateien
 \usepackage [
   bookmarks=true,         % Show bookmarks bar?
-  unicode=false,          % Non-Latin characters in Acrobat’s bookmarks
-  pdftoolbar=true,        % Show Acrobat’s toolbar?
-  pdfmenubar=true,        % Show Acrobat’s menu?
+  unicode=false,          % Non-Latin characters in Acrobats bookmarks
+  pdftoolbar=true,        % Show Acrobats toolbar?
+  pdfmenubar=true,        % Show Acrobats menu?
   pdffitwindow=false,     % Window fit to page when opened
   pdfstartview={XYZ null null 1}, % FitH fits the width of the page to the window
   pdftitle={Algorithmen zur Parallelisierung von DB-Anfragen auf Multi-Core-Prozessoren},    % Title

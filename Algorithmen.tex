@@ -5,16 +5,52 @@ Verbesserungsideen: entnommen aus \cite{SALOMIE}
 
 Einsatz dynamischer programmier-optimierung
 
-einsatz von hilfs-prozessoren f�r pre-fetch data
+einsatz von hilfs-prozessoren für pre-fetch data
 
 \section{Cache Optimierung}
 \label{sec:Algorithmen_Cache-Optimierung}
+Dieser Abschnitt behandelt eine Optimierung, die auf dem Last-Level-Cache basiert \cite{LEE}. 
 
+\subsection*{Warum Last-Level-Cache Optimierung?}
+Nach Huber \cite{HUBER} wird der Last-Level-Cache in Zukunft ein kritischer Bottleneck werden. Während in den letzten Jahrzehnten hauptsächlich versucht wurde, den Zugriff auf den Sekundärspeicher zu minimieren und die Verwaltung des Hauptspeichers zu optimieren, wird nach Ansicht von Huber das Problem bald nicht mehr der Hauptspeicher, sondern der Last Level Cache der Multicoreprozessoren sein. Schließlich werden Hauptspeicher größer und billiger, so dass Datenbanken teilweise komplett in diesen Speicher passen.
 
-%\section{Minimalizing Cache Conflict}
+\subsection*{Die grobe Idee}
+Die generelle Idee hinter diesem Algorithmus ist, verschiedenen Operationen eine Kennzeichnung (Locality Strength) zuzuweisen. Diese Kennzeichnung ist ein Indiz dafür, inwiefern diese Operationen noch einmal Daten aus dem LLC benötigt und wie hoch die Wahrscheinlichkeit ist, diese auch noch im Cache zu finden. Anhand der Locality Strength werden dann passende Operationen ausgesucht, die sich gegenseitig so wenig wie möglich im Wege stehen und dann auf beiden Kernen ausgeführt. Damit vermeidet das System im Vorfeld konkurriende Prozesse, die sich Platz im Cache gegenseitig wegnehmen.
 
-\cite{LEE}
+Es werden drei Arten von Locality Strength definiert:
+\begin{description}
+\item[Strong Locality:] Query benötigt während der Ausführung häufig Daten im Cache, deren Größe aber im Vergleich zum Cache sehr klein sind. Als Beispiel sei hier ein sequentieller Tablescan oder ein Hash-Join mit kleiner Hash-Tabelle genannt. 
+\item[Moderate Locality:] Query benötigt während der Ausführung häufig Daten im Cache, deren Größe vergleichbar mit der Cachegröße ist, wie zum Beispiel ein Hash-Join.
+\item[Weak Locality:] Querys fallen unter diese Kategorie, wenn die Daten während der Ausführung nicht ständig angefragt werden oder wenn die häufig angefragten Daten zu groß für den Cache sind.
+\end{description}
 
+Aus den drei Arten folgt auch, inwieweit Sie sich gegenseitig beeinflussen. Folgende Tabelle zeigt die gegenseitige Beeinflussung der verschiedenen Lokalitäten bei paralleler Ausführung (ohne Cache-Partitionierung).\\
+\begin{tabular}{|l|l|l|l|} \hline
+ & Strong & Moderate & Weak \\ \hline
+Strong & Wenig & Mittel & Hoch \\ \hline
+Moderate & Mittel & Hoch & Hoch \\ \hline
+Weak & Wenig & Wenig & Wenig \\ \hline
+\end{tabular}
+
+Die erste Spalte gibt die Locality Strength des Runners (zu beobachtender Prozess) und die erste Zeile die Lokalität der Co-Runners. Anhand dieser Matrix ist die Entscheidung zu treffen, welche Queries parallel ablaufen sollen. Wir sehen, dass die meiste Beeinflussung dadurch stattfindet, wenn zu einem Prozess mit Strong oder Moderate Locality ein Prozess mit schwacher Lokalität gestartet wird.
+Der Grund ist, dass schwache Lokalitäten den Cache mit vielen Daten belegen (Cache Pollution) und den Platz für andere wegnehmen, während bei zwei schwachen Lokalitäten sowieso nicht komplett in den Cache passen (Capacity Contention).
+
+\subsection*{Hauptkomponenten der MCC-DB}
+Die MCC-DB besteht aus drei Komponenten. Die erste Komponente ist der Query Optimizer, welcher auf der Decision-Engine der Datenbank basiert. Zurzeit erstellen Datenbanken einen Zugriffsplan, anhand dessen Sie die Kosten für die Abfrage schätzen können. Allerdings beachtet die Abschätzung nicht mögliche Last Level Cache Konflikte bzw die Lokalität. Aus diesem Grund wird in der MCC-DB in der Entscheidung für einen Zugriffsplan noch die Lokalität beachtet. Wenn möglich, werden mehrere Zugriffspläne erstellt, deren Kosten sich nicht mehr als 30 Prozent unterscheiden.
+
+Die zweite Komponente ist der Query Scheduler. Der Scheduler entscheidet nun welche Queries mit den wenigsten Konflikten nun auf den Kernen laufen sollen.
+
+Die dritte Komponente ist der Cache Partitioner. Dieser ist dazu nötig, im Last Level Cache den passenden Speicherplatz für die Queries zu reservieren und das Prinzip der Lokalitäten noch zu optimieren. Diese Komponente muss mit Hilfe des Betriebssystem umgesetzt werden, während die ersten beiden Komponenten in der Datenbankdomain stattfinden.
+
+\subsection*{Entscheidungsfindung von MCC-DB}
+Als erstes betrachten wir die Entscheidungsfindung ohne Cache-Partitioning. In diesem Algorithmus werden die Zugriffspläne in zwei Queues aufgeteilt. Die Eine Queue enthält die Zugriffspläne mit den Lokalitäten Strong und Moderate gehalten, die andere Queue umfasst alle Pläne mit Weak-Locality. Aufgrund der Matrix (siehe Tabelle) verfolgt die MCC-DB eine \texttt{\textit{Same Locality Strength}} (im Folgendem SLS) Policy. Diese lässt immer nur zwei Queries gleichzeitig laufen, wenn diese aus der selben Queue stammen. Damit wird sichergestellt, dass die Prozesse sich gegenseitig nicht stark beeinflussen. Der Nachteil hierbei ist, dass zwei Prozesse mit Moderate Locality laufen können, die sich gegenseitig stark beeinflussen.
+
+Wenn wir nun die dritte Komponente hinzunehmen, den Cache-Partitioner, dann kann jedem Prozess ein bestimmter Speicherbereich im Cache zugewiesen werden, welcher nicht von anderen Prozessen überschrieben werden kann. Dadurch wird schon einmal Cache Pollution ausgeschlossen. Mit dieser Komponente wird nun statt SLS die \texttt{\textit{Mixed Locality Strength}} (im Folgendem MLS) Policy verfolgt. Nun werden aus den bereits erwähnten Queues immer jeweils einer aus unterschiedlichen Queues ausgewählt und gleichzeitig ausgeführt. Die Aufgabe vom Optimizer ist nun, die Anzahl der Elemente in beiden Queues im Gleichgewicht zu halten. Dies kann der Optimizer tun, indem er bei der Auswahl der Zugriffspläne die Länge der Queues mit in die Entscheidung einbezieht.
+
+\subsection*{Performanzgewinn}
+Folgende Abbildung zeigt den Performanzgewinn, der durch die MCC-DB erreicht wird (entnommen aus \cite{LEE})
+
+Wir sehen, dass ohne Cache-Partitioning bereits ein Erfolg zu sehen ist. Auf der X-Achse ist der Geschwindigkeitsverlust gekennzeichnet, auf der Y-Achse ist die Größe der Hash-Tabelle der Joins aufgeführt. Während der Effekt bei SLS von der Größe der Hash-Tabelle abhängt, arbeitet MLS mit Cache-Partitioner konstat gut mit einer hohen Effizienz.
 
 \section{Join Operationen}
 \label{sec:Join}
@@ -31,24 +67,24 @@ Daten werden im Speicher gehalten und kritische Daten auf Cache-Ebene werden ver
 \section{Sort Operationen}
 \label{sec:Algorithmen_Sort}
 
-Gro�es Problem/Leistungsverlust auf modernen CPUs durch Pipeline Abbr�che.
+Großes Problem/Leistungsverlust auf modernen CPUs durch Pipeline Abbrüche.
 
 \subsection{AA-Sort}
 \label{sec:Sort_2_AA-Sort}
 
-AA-Sort \cite{INOUE} ist aufgeteilt in in-Core Sortierung und out-of-Core Sortierung. In-Core sortiert unter zuhilfename von Cache, out-of-Core macht vorsortierung in bl�cke, die in cache passen und macht ein merg mit den vom Core sortierten Bl�cken.
+AA-Sort \cite{INOUE} ist aufgeteilt in in-Core Sortierung und out-of-Core Sortierung. In-Core sortiert unter zuhilfename von Cache, out-of-Core macht vorsortierung in blöcke, die in cache passen und macht ein merg mit den vom Core sortierten Blöcken.
 
-Kein Datenbank-Spezifischer Algorithmus aber ausnutzung mehrerer Cores und kann auch f�r DB-Anwendungen verwendet werden.
+Kein Datenbank-Spezifischer Algorithmus aber ausnutzung mehrerer Cores und kann auch für DB-Anwendungen verwendet werden.
 
 Sehr gut auf steigende Core-Zahlen skalierbar.
 
 Ausnutzung der SIMD (single instruction multiple data) Anweisungen.
 
-Schl�gt existierende Sortierungs-Algorithmen in Leistung.
+Schlägt existierende Sortierungs-Algorithmen in Leistung.
 
 O(n log(n))
 
-Ablauf: (1)Teile Daten in Bl�cke die in den CPU Cache passen.
+Ablauf: (1)Teile Daten in Blöcke die in den CPU Cache passen.
 (2) Sortieren auf CPU mit in-Core Sortierungs-Algorithmus.
 (3) Mergen der Sortierten Blocke mit dem out-of-Core Algorithmus
 
