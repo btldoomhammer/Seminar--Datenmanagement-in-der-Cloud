@@ -60,43 +60,139 @@ Index-Join in Zukunft schneller als Hash-Joins \cite{KIM}
 \subsection{Architecture Aware Hash-Join}
 \label{sec:AA-Hash-Join}
 
-Architecture Aware Hash-Join (AA-HJ) \cite{RASHID}
+HashJoin ist eine der entscheidendsten Operationen in Datenbanken. Daher ist es gerade hier wichtig eine Unterstützung von Multicore Rechnern zu erschaffen, um die Leistung noch einmal anheben zu können. Mit steigender Leistungsdifferenz zwischen CPU-Geschwindigkeit und Hauptspeicher muss der HashJoin Algorithmus die Hardware Architektur berücksichtigen, also "architecture aware" werden. Der Architecture Aware Hash Join (AA-Hash Join) \cite{RASHID}\cite{GARCIA} kann sogar durch Software-Prefetching zusätzlich  noch leistungsfähiger gemacht werden. Hier baut der Algorithmus auf vorangegangene Arbeit von Chen et al \cite{CHEN} auf.
 
-Daten werden im Speicher gehalten und kritische Daten auf Cache-Ebene werden verteilt. Verteilt in gleichen Teilen auf die Threads. Reduzierung der L2-Cache Miss-Rate(ca 80%).
+AA-Hash Join baut auf dem Model auf, bei dem davon ausgegangen wird, dass mit steigender Anzahl von Festplatten-Armen der Festplattenzugriff kein Bottleneck mehr ist. Tests zeigten, dass bei einem HashJoin die L2 Cache Miss Raten der Größe limitierende Faktor ist. Hier werden durchschnittliche Werte von 29\% bis 69\% Miss-Raten angenommen.
+
+Der AA-Hash Join setzt auf SMT Prozessorarchitekturen. Dabei wird vor allem die Fähigkeit der SMT Prozessoren ausgenutzt zwei parallele Prozesse auf den selben Daten arbeiten zu lassen. Setzt man alleine auf SMT, also nur zwei Prozesse, die sich gegenseitig zuarbeiten, liegen die Daten im L1 Cache des Prozessors. Bei Multicore Prozessoren und mehr als zwei Prozesse liegt diese gemeinsame Datenbasis dann im L2 Cache. Durch diese Prozessorarchitetur entsteht also eine ideale Menge von Prozessen durch : Anzahl CPUs * Anzahl Kerne * Anzahl Prozesse pro Kern. Bei einen Server mit 4 Quadcore CPUs, die SMT unterstützen, ist die ideale Anzahl an Prozessen 32. Dort sind es 4 4-Kern CPUs, was in 16 Kernen resultiert. Durch SMT können jedoch pro Kern 2 parallele Prozesse laufen, was zu den insgesamt 32 Prozessen führt.
+
+Der AA-Hash Join besteht aus drei Phasen. In der ersten Phase werden die Relationen an die Prozesse aufgeteilt und danach geclustert. In der zweiten Phase werden aus den Clustern die Hashtabellen erzeugt und gleichzeitig die Tupelcluster der größeren Relation S erzeugt. Im finalen Schritt werden dann anhand der Hashtabellen die Daten der einzelnen Datencluster durchsucht und in die Tabelle eingetragen.
+
+\subsubsection*{Partitionierung}
+\label{sec:AA-Hash-Join_Partitionierung}
+
+Als ersten Schritt werden die Prozesse erzeugt, die vom AA Hash Join verwendet werden. Da sich die Anzahl der verwendeten Prozesse nie ändert, können sie, um Prozessverwaltung zu reduzieren, einmal erzeugt und für den gesamten Algorithmus verwendet werden. Erst wenn der Join komplett ist, werden die Prozesse zerstört. Anschließend werden die Datenstrukturen vorbereitet, um die Indexcluster der kleineren Relation R aufzunehmen. Dafür wird der Indexcluster von R gebildet. Ein einzelner Eintrag im Index besteht aus 4 Byte für den Hash Wert und 4 Byte für den Pointer auf den Tupel, also 8 Byte. Nun müssen entsprechende Cluster erstellt werden, so dass der zur Verfügung stehende Speicher im Cache optimal genutzt wird. Um die Cluster zu erstellen, wird die kleinere R Relation anhand der Anzahl der Prozesse in gleiche Teile aufgeteilt. Jedem Teil wird einer der Prozesse zugewiesen. Die Prozesse gehen sequenziell durch ihre jeweiligen Tupel, was Hardware-Prefetching erlaubt. Jeder Tupel wird anhand seines Schlüssels einem der gebildeten Prozess-spezifischen Cluster zugewiesen, so das jeder Prozess seine Cluster mit Tupeln ähnlicher Schlüssel füllt.
+
+Das bestimmen der Größe der Cluster geschieht anhand spezieller Einschränkungen durch die Größe des verwendeten Caches. Moderne CPUs verfügen über L1 und L2 Cache. L1 Cache ist auf moderneren CPUs zwischen 64 und 256 KByte groß, während L2 Cache normalerweise bis zu 512 KByte groß sein kann. Da das Ziel des Algorithmus ist, möglichst viele Prozesse auf der selben Datenbasis arbeiten zu lassen, muss zuerst zwischen zwei Fällen unterschieden werden. Bei SMT CPU-Architektur  liegen auf einem Kern zwei Prozesse, die jedoch beide parallel auf den L1 Cache zugreifen können. Im Falle einer SMT Singlecore-CPU bedeutet das, dass der gesamte L1 Cache genutzt werden kann um den Indexcluster R\textsubscript{n} aufzunehmen. Schließlich kann zusätzlich der L2 Cache für die Tupel der größeren Relation S verwendet werden. In diesem Fall ist also die Größe des Indexclusters gleich der Größe des L1 Caches.
+
+Gibt es mehr als einen Kern, so sieht das schon anders aus. Bei einem 4-Kern Prozessor beispielsweise gibt es 8 Prozesse, jedoch können über den L1 Cache nur jeweils 2er Pärchen ihre Daten teilen. Daher muss in diesem Fall der Indexcluster im L2 Cache aufgebaut werden. Dadurch wird zwar die Größe des verwendbaren Speichers für den Gesamtalgorithmus beeinflusst und der langsamere L2 Cache wird dem schnelleren L1 vorgezogen. Durch die Parallelität wird dieser Verlust jedoch wieder ausgeglichen. Dennoch muss ein optimaler Wert für den für die Cluster reservierten Speicher gefunden werden. Denn nun müssen sowohl der Indexcluster Rn, also auch die Tupel von R in den Cache passen. Zusätzlich muss Platz bleiben für einige Tupel der S Relation für die spätere Phase der Durchsuchung und auch das Betriebssystem braucht noch Platz für seine eigenen Prozesse. Da die Größe der Hash-Tabelle vor dem Hashen nicht bekannt ist, muss hier eine \textit{Grenze} abgeschätzt werden, der ausreichend Platz bietet. Dies wird in \cite{GARCIA} mit der einfachen Formel: (Größe-R-Relation + Größe-Hashtabelle)/ \textit{Grenze} < Größe-L2-Cache abgeschätzt.
+
+Aber egal ob reiner SMT oder ein Mehrkern-Prozessor vorliegt, die Indextabelle von R wird anhand der Anzahl Prozesse in gleich große Teile zerteilt und an die Prozesse verteilt. Hierbei muss die genaue Struktur der CPU berücksichtigt werden. Bei Intels Quad-Core Architektur beispielsweise teilen sich 2 Kerne ihren L2 Cache. Also können somit 4 Prozesse ihre Hashtabelle teilen. Diese Prozessgruppen erledigen in den kommenden beiden Phasen ihre Arbeiten gemeinsam.
+
+Am Ende dieser Phase ist die R-Relation in gleichgroße Teile aufgeteilt und jede dieser Teile ist in mehrere Cluster ähnlicher Schlüssel gegliedert.
+
+\subsubsection*{Aufbauphase}
+\label{sec:AA_Hash-Join_Aufbauphase}
+
+Nachdem sichergestellt ist, dass jeder Prozess seine Arbeit abgeschlossen hat beginnt der nächste Schritt. Um Cache-Miss und Synchronisierungsprobleme zu minimieren, beschäftigt sich jedoch nur der Prozess mit dem kleinsten Prozessindex in der Prozessgruppe mit dem Aufbau der eigentlichen Hashtabelle, während die anderen Prozesse bereits die größere S-Relation clustern. Andere Alternativen sind ineffektiv. Würde beispielsweise jeder Prozess seine eigene Hashtabelle erstellen, so gäbe es mehr Cache Misses, da ein Eintrag nur in einer der Hashtabellen liegt. Arbeiten alle Prozesse an einer Tabelle muss ein Sperrmechanismus her, der die ganze Parallelität zunichtemachen würde, da sie dann aufeinander warten müssten.
+
+Der Prozess, der die Hashtabelle erstellt, nimmt sich jeweils die ersten Cluster der verschiedenen Teile und bildet eine Hastabelle. Dies wiederholt er mit sämtlichen Clustern.
+
+Ähnlich wie in der ersten Phase wird die größere S Relation in Cluster ähnlicher Schlüssel zerlegt. Die gesamte Relation wird in \textit{n} Teile zerlegt, wobei \textit{n} die Anzahl der Prozesse ist. Diese Teile werden nun geclustert wie in der ersten Phase mit der R Relation verfahren wurde. Das heißt, die Teile werden von einem Prozess durchsucht und werden anhand des Schlüssels in Prozess-spezifische Cluster einsortiert. Damit im letzten Schritt jeder Prozess einen Clustersatz hat, muss ein Prozess zwei Teile von S bearbeiten, um dem Hash-Prozess zuzuarbeiten.
+
+Diese Cluster brauchen im Unterschied zu den R-Clustern nicht in den Speicher zu passen. Da die Sequenz der Datenbank bekannt ist, können sie mit einem Prefetch Befehl bereits vorgeladen werden. Auch muss immer nur Platz im Cache für ein paar wenige Tupel aus S sein, da diese durch Prefetching in Schritten geladen werden können.
+
+Am Ende dieser Phase existieren \textit{n} geclusteret Teile von S und \textit{m} Hashtabellen, für jede Gruppe von Clustern gleicher Schlüssel eine. Hier ist \textit{n} die Anzahl der Prozesse und \textit{m} die Anzahl der Cluster. Die Cluster-Anzahl ist abhängig von der Größe des Caches, wie in der ersten Phase beschrieben.
+
+\subsubsection*{Durchsuchphase}
+\label{sec:AA_Hash-Join_Durchsuchphase}
+
+Wenn alle Prozesse mit ihrer Arbeit aus der vorherigen Phase fertig sind, beginnen sie ihren zugewiesenen Cluster zu lesen. Um in diesem Schritt die optimale Prozessauslastung zu gewährleisten, aber gleichzeitig Race-Conditions zwischen den Prozessen zu vermeiden, werden die R-Hashtabellen-Cluster Schritt für Schritt geladen. Alle Prozesse arbeiten auf dem selben Hashtabellen-Teil und lesen Schritt für Schritt die Tupel ihrer zugewiesenen S-Relationen aus ihrem Tupelcluster ein und vergleichen sie mit der aktuellen Hashtabelle. Jeder Prozess durchsucht also seine zugewiesenen Tupel und fügt bei Treffer diese in die Buckets der Hashtabelle ein.
+
+Sind alle Prozesse mit ihrem durchsuchen fertig, was im Normalfall die selbe Zeit in Anspruch nehmen sollte, wird der nächste Cluster der Hashtabelle in den Cache eingelesen. Jeder Prozess läd dann den nächsten Cluster der S-Relation und beginnt erneut, die Tupel zu durchsuchen und in die Hashtabellen einzufügen. Dadurch gibt es keine Cache-Misses im Hashtabellen Cluster. Ist es der zweite Fall – also mehrere Hastabellen auf unterschiedlichen L2 Caches eines Multicore Prozessors – müssen diese Tabellen zusätzlich noch zusammengeführt werden, wenn die Hashtabellen gefüllt sind.
+
+Dieser Schritt ist der rechenintensivste des AA-Hash Join Algorithmus. Da der Algorithmus durch seine Strukturierung dafür sorgt, dass die Schlüssel gleichmäßig verteilt sind, leistet Jeder Prozess gleiche Arbeit und kann diese in gleicher Zeit abschließen. Und da jeweils 4 Prozesse auf der selben Hashtabelle arbeiten muss diese nicht immer erneut nachgeladen werden. Die Hashtabelle kann für jeden Teilschritt in dieser Phase im Speicher bleiben und der nächste Teil der Hashtabelle muss auch nur einmal eingelesen werden. Durch den Einsatz von Software-Prefetch-Befehlen kann auch das Laden der Tupel aus den Clustern optimiert werden, so dass die Pipeline bereits die richtigen Daten besitzt und es keine Abbrüche gibt. Hier kann kein Hardware-Prefetching genutzt werden, da die Tupel durch das schlüsselbasierte Clustering nicht mehr sequenziell abgefragt werden können. Da die Software aber die Reihenfolge der Cluster kennt, kann das Hardware-Prefetching durch Software-Prefetching ersetzt werden.
+
+\subsubsection*{Zusammenfassung}
+\label{sec:AA_Hash-Join_Zusammenfassung}
+
+Die größere Relation S und die kleinere Relation S werden beide in \textit{n} Teile aufgeteilt. Jeder dieser Teile wird in \textit{m} Cluster zerlegt, so dass \textit{n*m} Cluster pro Relation entstehen, wobei jeder Prozess \textit{m} Cluster besitzt. Eine Hashtabelle besteht aus \textit{n} Clusters – aus jedem Prozess einem – so dass sich die Hashtabelle aus den Clustern ähnlicher Schlüssel bildet.
+
+
+[BILDER!!]
+
+
+\subsubsection*{Leistung}
+\label{sec:AA_Hash-Join_Leistung}
+
+Die Leistung des Algorithmus ist es also, den Cache möglichst optimal auszunutzen und durch geschicktes Aufteilen Cache-Misses zu reduzieren und Prefetching zu berücksichtigen. In Phasen 1 und 2 kann dies Automatisch durch Hardware-Prefetching geschehen und durch Prefetch-Befehle im Phase 3. Diese optimale Nutzung wird dadurch erreicht, dass die gesamte Arbeit in Portionen zerlegt wird, die in den Cache passen um die Cache-Miss Rate zu reduzieren. Dennoch haben die Tests in \cite{GARCIA} gezeigt, dass die L2-Cache-Miss Rate noch immer das größte Problem darstellt und hier noch über Optimierungen nachgedacht werden kann. Auch die Wahl der richtigen Größe der Partitionen ist entscheidend. Sind diese zu Groß passen sie nicht mehr in den Cache oder lassen keinen Platz mehr für andere Operationen. Sind sie zu klein gibt es jedoch einen Overhead durch die häufigen Kontextwechsel, wenn neue Cluster gelesen werden. Gerade bei einem Prozessor, der mehrere Kerne besitzt ist die Aufteilung wichtig, da hier sowohl Hashtabelle, als auch alles andere im L2 Cache gehalten werden muss, während bei einem SMT-Singlecore die Hashtabellen exklusiv im L1 Cache residieren können. In diesem Fall wird jedoch deutlich, dass das Verfahren die L1 Cache Miss Rate auf ungefähr 2-4 \% Miss-Rate senkt.
+
+Der benötigte Speicher ist gerade bei der Multicore-Variante jedoch nicht zu verachten. Der benötigte Speicher ist das 3,4fache der Größe der Relationen, durch den Overhead der Partitionierung und des Clusterings. Dennoch gibt es einen nicht unerheblichen Leistungsgewinn im Vergleich zu einem Hash Join mit nur einem Prozess. Die Quelle Spricht hier bei einem SMT-Prozessor mit einem Kern von einer Leistungssteigerung um einen Faktor zwischen 2,1 und 2,9 und bei einem Multicore zwischen 2 und 4,9. Diese Teste basieren auf einem Intel Quadcore mit SMT-Unterstützung. Dieser Leistungsgewinn wird Primär durch eine reduzierte L2 Cache-Miss Rate erzielt. Laut den Daten reduziert sich die Miss Rate von 69\% auf 11\%.
 
 \section{Sort Operationen}
 \label{sec:Algorithmen_Sort}
 
 Großes Problem/Leistungsverlust auf modernen CPUs durch Pipeline Abbrüche.
 
-\subsection{AA-Sort}
+\subsection{Aligned Access-Sort}
 \label{sec:Sort_2_AA-Sort}
 
-AA-Sort \cite{INOUE} ist aufgeteilt in in-Core Sortierung und out-of-Core Sortierung. In-Core sortiert unter zuhilfename von Cache, out-of-Core macht vorsortierung in blöcke, die in cache passen und macht ein merg mit den vom Core sortierten Blöcken.
+Sortieren ist einer der wichtigen Datenbankoperationen, doch bisherige Sortierverfahren sind nur begrenzt für Multithread-Anwendungen geeignet. Der bevorzugte \textit{quicksort} zieht kaum Vorteile aus mehreren Pozessoren. Aligned-Access Sort \cite{INOUE} setzt hier auf eine andere Basis. Aligned-Access- Sort (AA-Sort) ist ein Sortieralgorithmus der sowohl Single Instruction Multiple Data (SIMD) Befehle nutzt als auch Parallelität auf Prozessebene. Er ist für die Verwendung auf Prozessoren mit geteiltem Speicher entwickelt und zielt auf die Optimierung der SIMD Befehle um optimalen Zugriff auf den Speicher zu ermöglichen.
 
-Kein Datenbank-Spezifischer Algorithmus aber ausnutzung mehrerer Cores und kann auch für DB-Anwendungen verwendet werden.
+SIMD Befehle wie beispielsweise SSE oder VMX haben 128-Bit Platz für Daten neben den Registern und dem eigentlichen Befehl. Doch um diesen Vorteil effektiv nutzen zu können muss dieser Datenplatz effizient genutzt werden, die zu sortierenden Daten also idealerweise in diesen 128-Bit Platz passen ohne zu viele Bits unbenutzt zu lassen. So kann ein einfacher Vergleich mehrerer Werte in einem Befehl ausgeführt werden, ohne das die Werte nachgeladen werden müssen. Alle Werte werden in den Datenbereich des SIMD Befehls gespeichert und der Vergleich greift nun nicht mehr auf den Speicher, sondern nur noch auf den Datenbereich des Befehls zurück.
 
-Sehr gut auf steigende Core-Zahlen skalierbar.
+Um diese Besonderheit in einen Vorteil zu verwandeln setzt AA-Sort auf zwei Schritte in der Sortierung. Der spezielle in-core Sortierungsschritt setzt auf SIMD Befehle um Speicherzugriff und Pipeline optimal zu nutzen. Kernidee hierfür ist \textit{combsort} \cite{LACEY} zu optimieren, so dass er auf Blockebene und nicht mehr auf Elementebene anwendbar ist, wodurch die SIMD Unterstützung verbessert wird.
 
-Ausnutzung der SIMD (single instruction multiple data) Anweisungen.
+Dies macht jedoch einen zweiten Schritt – die out-of-core Sortierung – erforderlich. Denn dafür müssen die Daten in eine ideale Form gebracht werden. Diese lassen sich dann mit einem \textit{mergesort} Ansatz im in-core Teil sortiert.
 
-Schlägt existierende Sortierungs-Algorithmen in Leistung.
+Der gesamte AA-Sort zerlegt die Daten zuerst in Blöcke, die in de L2 Cache des Prozessors passen. Der in-core Sortieralgorithmus sortiert diese Blöcke. Die sortierten Blöcke werden schließlich durch den out-of-core Algorithmus zusammengeführt. Beide Algorithmusphasen profitieren von der Parallelität mehrerer Prozesse.
 
-O(n log(n))
 
-Ablauf: (1)Teile Daten in Blöcke die in den CPU Cache passen.
-(2) Sortieren auf CPU mit in-Core Sortierungs-Algorithmus.
-(3) Mergen der Sortierten Blocke mit dem out-of-Core Algorithmus
+\subsubsection*{Blockbildung}
+\label{sec:AA-Sort_Blockbildung}
 
-\subsubsection*{In-Core Sortierung}
-\label{sec:In-Core_Sortierung}
+Die Größe der Blöcke hängt von den zu sortierenden Daten ab. SIMD Befehle haben 128 Bit Datenplatz. Die Blöcke müssen daher so aufgeteilt werden, dass sie in diesen Platz passen. Im Falle von 32 Bit Integer wäre das Blocke von jeweils 4 Integerwerten. Aber auch andere Größen sind denkbar, solange sie sich effektiv auf die 128 Bit aufteilen lassen. Es entstehen Vektoren die jeweils die Daten der Blöcke beinhalten. Im Beispiel der 32 Bit Werte, die in der weiteren Beschreibung des Algorithmus zugrunde gelegt werden, entstehen \textit{n} = N/4 Vektoren, also \textit{n} Vektoren, die jeweils 4 Elemente der gesamten N Werte beinhalten.
 
-Basiert auf combsort \cite{LACEY}, einer Verbesserung von Bubble-Sort.
+Aber auch der Cache kann bei der Aufteilung eine Rolle spielen. Passt ein Block nicht in den Cache eines Prozessorkerns muss eine insgesamt kleinere Blockgröße angestrebt werden, auch wenn das zur Folge hat, dass der SIMD-Datenteil dann nicht optimal gefüllt ist.
 
-\section{Evaluation}
-\label{sec:Evaluation}
+\subsubsection*{In-core Algorithmus}
+\label{sec:AA-Sort_In_Core}
 
-Allgemeine betrachtung und bewertung, welche Probleme und wie stark die Nutzung von Multicore ist und wieviel Leistung gewonnen wird. Aufwand/Nutzen
+Der in-core Algorithmus baut auf \textit{combsort} auf, was wiederum eine Erweiterung von \textit{bubblesort} ist. \textit{Bubblesort} vergleicht zwei benachbarte Elemente und tauscht sie wenn nötig. \textit{Combsort} geht einen Schritt weiter und vergleicht nicht mehr nur noch benachbarte Elemente. Er beginnt das Vergleichen mit weit auseinanderliegenden Elementen. Diese Distanz, auch \textit{Gap} genant wird bei jedem Schritt durch den empirischen Faktor 1,3 dividiert. So reduziert sich mit jedem Schritt die Distanz.
+
+Es gibt jedoch Probleme die die Verwendung von SIMD im Zusammenhang mit \textit{combsort} erschweren. Durch die wiederholende Division durch 1,3 entstehen \textit{Gaps}, die keine Vielfachen der Blockaufteilung sind. Dadurch kommt es zu unregelmäßigen Zugriffen auf die Blöcke. Aber auch \textit{Gaps} kleiner als die Schrittweite der Blocke erzeugt Probleme. In diesem Fall kann die Datenparallelität nicht mehr ausgenutzt werden, da ein Block und somit ein Prozess unregelmäßig zugegriffen wird.
+
+Um diese Probleme des \textit{combsorts} zu umgehen und SIMD zu verwenden, setzt der in-core Algorithmus auf 3 Schritte.
+
+
+(1) Jeder Block wird in aufsteigender Reihenfolge sortiert
+
+(2) \textit{Combsort} wird verwendet um die Elemente der Blöcke in die \textit{Vertauschte Form} zu bringen.
+
+(3) Die \textit{Vertauschte Form} wird wieder in die Originalform überführt
+
+
+Durch diese Schritte wird ein \textit{combsort}-ähnliches Verhalten erzeugt, das jedoch nur \textit{Gaps} von Vielfachen der Blockaufteilung besitzt. Der erste Schritt entspricht dem \textit{combsort} mit den \textit{Gaps} N/n, N/n*2, N/n*3, wobei n die Anzahl Elemente pro Block ist und N die Anzahl aller Elemente. Diese Sortierung lässt sich mit Vectorbefehlen aus dem SIMD Befehlssatz problemlos und ohne viel Rechenaufwand lösen da die Blöcke ja bereits in passender 128 Bit Größe vorliegen.
+
+Der zweite Schritt tauscht nun die Elemente zwischen den einzelnen Blocken in die Vertauschte Form. Dafür wird der combsort-Algorithmus nun nicht für einzelne Elemente, sondern auf Blockebene durchgeführt. Jeder Vergleich zweier Blöcke (hier A und B) besteht dabei aus zwei Teilen. Zuerst werden alle Elemente aus A mit den korrespondierenden Elementen aus B vertauscht, so das die kleineren Werte in A stehen. Dann wird das Selbe erneut durchgeführt. Diesmal werden jedoch die ersten 1 bis \textit{n}-1 Werte aus A mit den Werte 2 bis \textit{n} aus B verglichen. Dies ersetzt zwar die innere Schleife des \textit{combsort} durch zwei Schleifen, jedoch können nun die Vergleiche auf Basis der SIMD Vectorbefehle ausgeführt werden. Der dritte Schritt sortiert die einzelnen Blöcke erneut, aufsteigend.
+
+Durch dieses Herangehen werden die beiden angesprochenen Probleme der \textit{Gap}-Bildung von zu Kleinen oder nicht Vielfachen der Blockaufteilung vermieden. Teile der combsort-Schleifen werden einfach auf andere Operationen abgebildet. Die verbleibende Schleife kann dann mit dem Selben Schema und der Division durch 1,3 auf der Ebene der Blöcke durchgeführt werden. Insgesamt hat der in-core Algorithmus eine Laufzeit von O(n log( n) ) im Durchschnitt und O(n\textsuperscript{2}) im schlechtesten Fall. Der große Vorteil gegenüber anderen Sortierverfahren, die auch im schlechtesten Fall O(n log(n) ) erreichen, ist die Verwendung von SIMD Befehlen, so das Zugriffe auf den Speicher reduziert und Cache-Misses vermieden werden. Die benötigten Werte werden bereits im 128 Bit-Datenteil mitgeliefert und müssen nicht mehr separat aus dem Speicher geladen werden. Dadurch ist dieses Verfahren deutlich schneller. Dennoch ist die Sortierung nicht abgeschlossen, es wurde nur eine Blockaufteilung erzeugt, die einem bekannten Schema folgt. Die finale Sortierung wird im nächsten Algorithmusteil, dem  out-of-core Algorithmus durchgeführt.
+
+\subsubsection*{Out-of-core Algorithmus}
+\label{sec:AA-Sort_Out_Of_Core}
+
+Am Ende des in-core Schrittes ist jeder Block in sich selbst sortiert und existiert in der bekannten Struktur der Vertauschten Form. Der out-of-core Algorithmus sortiert nun die Blöcke zurück in eine zusammenhängende Form. Auch diese Sortierung setzt auf den SIMD Befehlssatz. Hier wird jedoch auf einen \textit{mergesort} zurückgegriffen. Zwei Blöcke mit P Elementen lassen sich dabei in log(P) +1 Schritten sortieren. Jeder Schritt führt nur einen Vectorvergleich, zwei Vectorauswahlen und ein bis zwei Vectorvertauschungen aus. Da die \textit{Vertauschte Form}, in denen die Elemente vorsortiert sind bekannt ist, kann dieses Wissen genutzt werden. Dadurch reduziert sich die Anzahl der bedingten Verzweigungen im Quellcode auf eine Verzweigung pro P Elemente aufgrund ihrer Blockform. Ohne dieses Vorarbeit wäre es eine Verzweigung pro Element und nicht nur pro Block. Da jede Verzweigung potenziell ist mit einem Pipeline-Abbruch gleichgesetzt werden kann, ist der vorgestellte Algorithmus durch die Vertauschte Form performanter. Die Laufzeit des out-of-core Algorithmus ist O(n).
+
+\subsubsection*{Zusammenfassung}
+\label{sec:AA-Sort_Zusammenfassung}
+
+Der gesamte AA-Sort teilt sich in drei Phasen. In der ersten werden die zu sortierenden Daten in 128 Bit Blöcke aufgeteilt, um in den Datenteil der SIMD Befehle zu passen. Diese unabhängigen Blöcke werden nun durch den in-core Algorithmus parallel von mehreren Prozessen sortiert. Dieser Schritt basiert auf einer \textit{combsort}-ähnlichen Sortierung, wobei durch geschickte Aufteilung auf Blockebene \textit{combsort}-Schleifen mit unpassendem \textit{Gap} auf zusätzlich SIMD Befehle abgebildet werden. Anschließend werden die Blöcke parallel von mehreren Prozesse durch einen \textit{mergesort} zusammengesetzt. Dieser \textit{mergesort} im out-of-core Algorithmus nutzt Wissen über die Struktur der Blöcke um Pipeline-Abbrüche zu reduzieren. Sowohl in-core, als out-of-core Algorithmus setzten auf den SIMD Befehlssatz, um Cache-Miss-Raten zu reduzieren, indem sie die zu betrachtenden Daten bereits mitliefern.
+
+In Bezug zu Datenbankanwendungen könne die zu sortierenden Werte beispielsweise Paare aus {key, data} sein. Hier muss jedoch abhängig von den verwendeten Daten der AA-Sort angepasst werden. Unter Zuhilfenahme des \textit{radixsort} lassen sich dann auch größere Daten wie beispielsweise 64-bit Integer und 10-Byte ASCII Strings sortieren. Dafür wird aus den Datenelementen die ersten paar Bytes extrahiert und in 32-Bit Integer codiert. Ab hier kann normal weiter sortiert werden, solange keine zwei gleichen 32-Bit Schlüssel auftauchen. In solchen Fällen müssen dann auch die restlichen Bytes betrachtet werden, um korrekt zu sortieren. Dadurch wird der AA-Sort um den Faktor 1.6 langsamer ist jedoch noch immer um den Faktor 5 schneller als vergleichbare Sortieralgorithmen (GPUTeraSort \cite{GOVINDARAJU}).
+
+\subsubsection*{Leistung}
+\label{sec:AA-Sort_Lesitung}
+
+Der große Vorteil des AA-Sort ist die Vermeidung von Pipeline-Abrissen und die Aufteilung der Arbeit auf mehrere Prozesse. Die Authoren \cite{INOUE} geben die Komplexität mir O(n log(n) ) an, auch im schlimmsten Fall. Da jedoch Parallelität ausgenutzt werden kann, kann dies auch mit O(n log(n) / \textit{k}) angeben werden, wobei \textit{k} für die Anzahl der Prozesse steht. Jedoch darf hier \textit{k} nicht größer als die Anzahl der Blöcke sein. 
+
+Bei großen Datenmengen von 32 Bit Integerwerten von insgesamt 128 Mio. Elementen (512 MB) ist AA-Sort um den Faktor 3 schneller als vergleichbare Sortierverfahren aus der STL. Jedoch ist aufgrund der heuristischen Herangehensweise denkbar, dass der in-core Teil für einige nicht ideal-große Start-Datensätze reduzierte Leistungen erzielt. Der out-of-core Teil ist in seiner Leistung jedoch weitestgehend unabhängig von der Größe und der Art der Daten.
+
+Die Spezialisierung auf SIMD Befehle bedeutet jedoch, dass die Leistung ohne entsprechende Prozessorarchitekture drastisch sinkt. Der in-core Algorithmus wird dadurch um den Faktor 7,47 langsamer und der out-of-core Teil um 3,33. Hier wird noch einmal deutlich, dass SIMD gerade im in-core Teil das größte Verbesserungspotenzial mit sich bringt.
+
+%\section{Evaluation}
+%\label{sec:Evaluation}
+
+%Allgemeine betrachtung und bewertung, welche Probleme und wie stark die Nutzung von Multicore ist und wieviel Leistung gewonnen wird. Aufwand/Nutzen
 
 %\section{Aggregation}
 %\label{sec:Aggregation}
