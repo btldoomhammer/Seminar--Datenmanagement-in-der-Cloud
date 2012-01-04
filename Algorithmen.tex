@@ -1,11 +1,10 @@
 \chapter{Algorithmen}
 \label{sec:Algorithmen}
 
-Verbesserungsideen: entnommen aus \cite{SALOMIE}
+Es gibt verschiedene Ansätze und Algorithmen, die es Datenbanken erlauben Multicore-Prozessoren zu unterstützen. Das größte Problem dabei ist die Verwaltung des Speichers und des Caches. So ist das Ziel, Cache-Zugriffe durch intelligente Cachenutzung und Prefetching zu optimieren um die Grundlage für mehrere parallele Prozesse zu legen.
 
-Einsatz dynamischer programmier-optimierung
+Im folgenden werden 4 Algorithmen ausgewählt und vorgestellt. Dabei handelt es sich um Ansätze aus verschiedenen Bereichen des Datenbank-Systems. Aligned Access-Sort ist ein reiner Sortieralgorithmus, während der Architecture Aware-Hash Join ebenfalls nur den Hash Join optimiert. Der Minimizing Cache Conflicts Ansatz baut auf eine globale Betrachtung der Anforderungen auf und der Parallel Query Auto-Tuner zielt auf die Optimierung des Zugriffsplans. Doch trotz der sehr unterschiedlichen Betrachtungsweise sind dies alles vielversprechende Ansätze der Nutzung von Multicore-CPUs.
 
-einsatz von hilfs-prozessoren für pre-fetch data
 
 \section{Minimizing Cache Conflicts (MCC-DB)}
 \label{sec:MCC-DB}
@@ -208,6 +207,10 @@ In diesem Abschnitt betrachten wir noch einmal zusammenfassend die Algorithmen u
 Die MCC-DB erreicht sehr gute Ergebnisse, sofern der Cache-Partitioner angewendet wird. Mit der MLS-Strategy kann der Performanzverlust minimal gehalten werden. Allerdings wird dazu die Hilfe des Betriebssystems benötigt. Der Cache-Partitioner funktioniert nur, wenn das OS auch abgepasst worden ist. Der Algorithmus errechnet aufgrund statischer Analysen die Optionen zur Optimierung und wendet diese mit Hilfe des Betriebssystems an.
 
 Parallel SQL Query Auto-Tuning on Multicore hingegen arbeitet lediglich mit Optimierungen am Zugriffsplan, weswegen der initiale Aufwand geringer ausfällt. Hinzu kommt, dass der Algorithmus in der Lage ist, sich selbstständig zu verbessern. In mehreren Iterationen wird versucht nach bestimmten Mustern die Verarbeitung zu verbessern. Dabei ist der Algorithmus nicht vom Betriebssystem abhängig. Weiterhin ist dieser sehr flexibel und es lassen sich prinzipiell mehr Querys erreichen als mit MCC-DB. Der Optimierungseffekt fällt dabei aber im Normalfall geringer aus als bei MCC-DB, da die Optimierung auf höherer Ebene ausfällt als bei der MCC-DB.
+
+Architecture Aware Hash-Join ist eine reine Optimierung des Hash-Joins, einem der rechenintensiven Datenbankoperationen. Der Algorithmus ist auf eine spezielle Architektur angewiesen, Intels SMT-Prozessoren. Durch geschickte Cache-Nutzung in Kombination mit der Parallelität kann die Leistung des Hash-Joins erheblich verbessert werden. 8 Prozesse beschleunigen den Join um einen Faktor zwischen 2 und 4,9. 
+
+Alligned Access Sort ist ein reiner Sortieralgorithmus und daher nicht nur an Datenbankanwendungen gebunden. Ähnlich wie bei dem AA-Hash Join ist das Ziel eine geschickte Cache-Nutzung und paralleler Verarbeitung. Dabei setzt er auf bekannten Sortierverfahren auf, optimiert diese jedoch so, dass er um einen Faktor von 3 schneller ist als andere Sortieralgorithmen. AA-Sort baut auf SIMD-Prozessorbefehlen auf, die jedoch von allen moderneren Prozessoren unterstützt werden. Da AA-Sorts finale Leistung von den zu sortierenden Daten abhängt muss der genaue Leistungsgewinn bei Datenbank-Systemen jedoch noch in der Praxis erprobt werden.
 %\section{Aggregation}
 %\label{sec:Aggregation}
 
