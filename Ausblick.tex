@@ -4,9 +4,18 @@
 \section{Zusammenfassung}
 \label{sec:Zusammenfassung}
 
+Durch den Paradigmenwechsel von immer schnelleren Prozessoren hin zu Multicore-Prozessoren greifen die bisherigen Optimierungen nur noch begrenzt. Daher müssen neue Ideen und Algorithmen umgesetzt werden, damit Datenbank-Systeme mit den steigenden Anforderungen schritthalten können. Dies erfordert einen neuen Umgang mit Zugriffen auf den Hauptspeicher und den Cache. Aber auch die Planung der Prozessor-Pipeline und der Prozessverteilung wird immer wichtiger.
+
+Um diese Optimierung durchzuführen können einerseits einzelne Teilbereiche und Datenbankoperationen einzeln optimiert werden, wie es beim AA-Sort und AA-Hash Join der Fall ist. Diese beiden Algorithmen versuchen für eine konkrete Aufgabenstellung Zugriffe auf den Cache so zu optimieren, dass paralleler Zugriff optimal möglich ist, ohne zu viele Cache-Miss und Pipeline-Abbrüche zu erzeugen. Dadurch können sie ihren Aufgabenbereich deutlich beschleunigen.
+
+Andererseits kann die Optimierung auch globaler betrachtet werden. Beim Minimizing Cache Conficts Ansatz geht es darum, den Cache Datenbank-übergreifend zu verwalten. Datenbankoperationen werden anhand ihres Cache Bedarfs eingeteilt um sie anhand dieses Kriteriums optimal zu verteilen und zu bearbeiten. Dies geschieht um einen Zugriffsplan. Beim Auto-Tuning geht es ebenfalls um die Optimierung des Zugriffsplans. Hier wird jedoch auf ein evolutionäres System gesetzt, dass sich selbst optimieren kann. Wiederkehrende Anfragen werden systematisch mit unterschiedlichen Pattern und Cachezuweisungen aufgerufen und die so gewonnenen Daten werden für die automatische Optimierung herangezogen. Dabei werden auch Teile des Zugriffsplans auf unterschiedliche Prozesse verteilt, wodurch auch eine ideale Prozessaufteilung entsteht.
+
+Beide Herangehensweise können signifikante Leistungssteigerungen erzeugen, so das davon auszugehen ist, dass in Zukunft Datenbanksysteme auf einige, oder - wenn möglich - mehrere dieser Optimierungen einsetzen werden.
+
+
 \section{Andere Ansätze}
 \label{sec:AndereAnsatze}
-Die in dieser Ausarbeitung im Detail vorgestellten Algorithmen sind nur ein Teil der Möglichkeiten, mehrere Prozesse für Datenbankabfrage-Optimierung zu nutzen. Um einen kleinen Blick auf diese anderen Ansätze zu werfen, werden im folgenden einige der Interessanteren betrachtet. Es gibt jedoch weitere Ansätze und Algorithmen, die hier nicht mehr erwähnt werden. Die meisten Dieser ähneln jedoch denen im Detail vorgestellten Algorithmen indem sich versuchen, die Zugriffe auf den Speicher zu optimieren und Cache-Misses und Pipeline-Abbrüche zu reduzieren.
+Die in dieser Ausarbeitung im Detail vorgestellten Algorithmen sind nur ein Teil der Möglichkeiten, mehrere Prozesse für Datenbankabfrage-Optimierung zu nutzen. Um einen kleinen Blick auf diese anderen Ansätze zu werfen, werden im folgenden einige der Interessanteren betrachtet. Es gibt jedoch zusätzlich noch weitere Ansätze und Algorithmen, die hier nicht mehr erwähnt werden. Die meisten Dieser ähneln jedoch denen im Detail vorgestellten Algorithmen indem sich versuchen, die Zugriffe auf den Speicher zu optimieren und Cache-Misses und Pipeline-Abbrüche zu reduzieren.
 
 \subsection{Netzwerkprozessor}
 \label{sec:Netzwerkprozessor}
