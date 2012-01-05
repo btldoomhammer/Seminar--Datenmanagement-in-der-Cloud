@@ -22,7 +22,7 @@ Es werden drei Arten von Locality Strength definiert:
 \item[Weak Locality:] Querys fallen unter diese Kategorie, wenn die Daten während der Ausführung nicht ständig angefragt werden oder wenn die häufig angefragten Daten zu groß für den Cache sind.
 \end{description}
 
-Aus den drei Arten folgt auch, inwieweit Sie sich gegenseitig beeinflussen. Folgende Tabelle zeigt die gegenseitige Beeinflussung der verschiedenen Lokalitäten bei paralleler Ausführung (ohne Cache-Partitionierung).\\
+Aus den drei Arten folgt auch, inwieweit Sie sich gegenseitig beeinflussen. Folgende Tabelle zeigt die gegenseitige Beeinflussung der verschiedenen Lokalitäten bei paralleler Ausführung (ohne Cache-Partitionierung; siehe Tabelle \ref{mcc_locality}).\\
 
 \begin{table}[h]
 	\centering
@@ -33,22 +33,21 @@ Moderate & Mittel & Hoch & Hoch \\ \hline
 Weak & Wenig & Wenig & Wenig \\ \hline
 	\end{tabular}
 	\caption{Gegenseitige Beeinflussung der Lokalitäten}
+	\label{mcc_locality}
 \end{table}
 
-
-
 Die erste Spalte gibt die Locality Strength des Runners (zu beobachtender Prozess) und die erste Zeile die Lokalität der Co-Runners. Anhand dieser Matrix ist die Entscheidung zu treffen, welche Queries parallel ablaufen sollen. Wir sehen, dass die meiste Beeinflussung dadurch stattfindet, wenn zu einem Prozess mit Strong oder Moderate Locality ein Prozess mit schwacher Lokalität gestartet wird.
-Der Grund ist, dass schwache Lokalitäten den Cache mit vielen Daten belegen (Cache Pollution) und den Platz für andere wegnehmen, während bei zwei schwachen Lokalitäten sowieso nicht komplett in den Cache passen (Capacity Contention).
+Der Grund ist, dass schwache Lokalitäten den Cache mit vielen Daten belegen (Cache Pollution) und den Platz für andere wegnehmen, während bei zwei schwachen Lokalitäten sowieso nicht komplett in den Cache passen (Capacity Contention). Ebenso beeinflussen sich zwei starke Lokalitäten nicht, da beide von der Größe her in den Cache passen müssten ohne sich zu behindern.
 
 \subsubsection*{Hauptkomponenten der MCC-DB}
-Die MCC-DB besteht aus drei Komponenten. Die erste Komponente ist der Query Optimizer, welcher auf der Decision-Engine der Datenbank basiert. Zurzeit erstellen Datenbanken einen Zugriffsplan, anhand dessen Sie die Kosten für die Abfrage schätzen können. Allerdings beachtet die Abschätzung nicht mögliche Last Level Cache Konflikte bzw die Lokalität. Aus diesem Grund wird in der MCC-DB in der Entscheidung für einen Zugriffsplan noch die Lokalität beachtet. Wenn möglich, werden mehrere Zugriffspläne erstellt, deren Kosten sich nicht mehr als 30 Prozent unterscheiden.
+Die MCC-DB besteht aus drei Komponenten. Die erste Komponente ist der Query Optimizer, welcher auf dem Algorithmus der Datenbank für Zugriffspläne basiert. Zurzeit erstellen Datenbanken einen Zugriffsplan, anhand dessen Sie die Kosten für die Abfrage schätzen können. Allerdings beachtet die Abschätzung nicht mögliche Last Level Cache Konflikte bzw die Lokalität. Aus diesem Grund wird in der MCC-DB in der Entscheidung für einen Zugriffsplan noch die Lokalität beachtet. Wenn möglich, werden mehrere Zugriffspläne erstellt, deren Kosten sich nicht mehr als 30 Prozent unterscheiden.
 
 Die zweite Komponente ist der Query Scheduler. Der Scheduler entscheidet nun welche Queries mit den wenigsten Konflikten nun auf den Kernen laufen sollen.
 
-Die dritte Komponente ist der Cache Partitioner. Dieser ist dazu nötig, im Last Level Cache den passenden Speicherplatz für die Queries zu reservieren und das Prinzip der Lokalitäten noch zu optimieren. Diese Komponente muss mit Hilfe des Betriebssystem umgesetzt werden, während die ersten beiden Komponenten in der Datenbankdomain stattfinden.
+Die dritte Komponente ist der Cache Partitioner. Dieser ist dazu nötig, im Last Level Cache den passenden Speicherplatz für die Queries zu reservieren und das Prinzip der Lokalitäten noch zu optimieren. Diese Komponente muss mit Hilfe des Betriebssystems umgesetzt werden, während die ersten beiden Komponenten in der Datenbankdomain stattfinden.
 
 \subsubsection*{Entscheidungsfindung von MCC-DB}
-Als erstes betrachten wir die Entscheidungsfindung ohne Cache-Partitioning. In diesem Algorithmus werden die Zugriffspläne in zwei Queues aufgeteilt. Die Eine Queue enthält die Zugriffspläne mit den Lokalitäten Strong und Moderate gehalten, die andere Queue umfasst alle Pläne mit Weak-Locality. Aufgrund der Matrix (siehe Tabelle) verfolgt die MCC-DB eine \texttt{\textit{Same Locality Strength}} (im Folgendem SLS) Policy. Diese lässt immer nur zwei Queries gleichzeitig laufen, wenn diese aus der selben Queue stammen. Damit wird sichergestellt, dass die Prozesse sich gegenseitig nicht stark beeinflussen. Der Nachteil hierbei ist, dass zwei Prozesse mit Moderate Locality laufen können, die sich gegenseitig stark beeinflussen.
+Als erstes betrachten wir die Entscheidungsfindung ohne Cache-Partitioning. In diesem Algorithmus werden die Zugriffspläne in zwei Queues aufgeteilt. Die eine Queue enthält die Zugriffspläne mit den Lokalitäten Strong und Moderate, die andere Queue umfasst alle Pläne mit Weak-Locality. Aufgrund der Matrix (siehe Tabelle \ref{mcc_locality}) verfolgt die MCC-DB eine \texttt{\textit{Same Locality Strength}} (im Folgendem SLS) Policy. Diese lässt immer nur zwei Queries gleichzeitig laufen, wenn diese aus der selben Queue stammen. Damit wird sichergestellt, dass die Prozesse sich gegenseitig nicht stark beeinflussen. Der Nachteil hierbei ist, dass zwei Prozesse mit Moderate Locality laufen können, die sich gegenseitig stark beeinflussen.
 
 Wenn wir nun die dritte Komponente hinzunehmen, den Cache-Partitioner, dann kann jedem Prozess ein bestimmter Speicherbereich im Cache zugewiesen werden, welcher nicht von anderen Prozessen überschrieben werden kann. Dadurch wird schon einmal Cache Pollution ausgeschlossen. Mit dieser Komponente wird nun statt SLS die \texttt{\textit{Mixed Locality Strength}} (im Folgendem MLS) Policy verfolgt. Nun werden aus den bereits erwähnten Queues immer jeweils einer aus unterschiedlichen Queues ausgewählt und gleichzeitig ausgeführt. Die Aufgabe vom Optimizer ist nun, die Anzahl der Elemente in beiden Queues im Gleichgewicht zu halten. Dies kann der Optimizer tun, indem er bei der Auswahl der Zugriffspläne die Länge der Queues mit in die Entscheidung einbezieht.
 
@@ -64,35 +63,48 @@ Folgende Abbildung zeigt den Performanzgewinn, der durch die MCC-DB erreicht wir
 
 \begin{figure}[htb]
 	\begin{center}
-        \includegraphics[scale=0.25]{Bilder/mcc_db_chart.pdf}
-    	\textsf{\caption{Links ist die Auswahl der auszuführenden Operationen nach SLS-Policy, rechts nach MLS-Policy}}
+        \includegraphics[scale=0.5]{Bilder/mcc_db_chart_cropped.pdf}
+    	\textsf{\caption{Performanzverlust in Prozent bei laufenden Queries mit unterschiedlicher Hash-Join-Tabellengröße}}
 	\end{center}
 \end{figure}
 
-Wir sehen, dass ohne Cache-Partitioning bereits ein Erfolg zu sehen ist. Auf der X-Achse ist der Geschwindigkeitsverlust gekennzeichnet, auf der Y-Achse ist die Größe der Hash-Tabelle der Joins aufgeführt. Während der Effekt bei SLS von der Größe der Hash-Tabelle abhängt, arbeitet MLS mit Cache-Partitioner konstat gut mit einer hohen Effizienz.
+Wir sehen, dass ohne Cache-Partitioning bereits ein Erfolg zu sehen ist. Auf der X-Achse ist der Geschwindigkeitsverlust gekennzeichnet, auf der Y-Achse ist die Größe der Hash-Tabelle der Joins aufgeführt. Während der Effekt bei SLS von der Größe der Hash-Tabelle abhängt, arbeitet MLS mit Cache-Partitioner konstat gut mit einer hohen Effizienz. Weiterhin ist der Effekt bei SLS bei Weitem nicht so groß wie bei MLS.
 
 \section{Parallel SQL Query Auto-Tuning on Multicore}
 \label{sec:Parallel-SQL-Query-Auto-Tuning}
 Der folgende Abschnitt behandelt ein evolutionäres Modell, welches sich mit jeder weiteren Iteration selbstverbessern soll. Dieser Algorithmus basiert auf dem Paper von Pankratius und Heneka.\\
 
-Datenbanksysteme produzieren Zugriffspläne, die sequentiell abgearbeitet werden. Zur Performanzoptimierung werden zwei Implementieren vorgenommen. Als erstes wird ein symmetrischer Hash-Join implementiert, der eine parallele Verarbeitung ermöglicht. Bei dem \"normalen\" asymmetrischen Hash-Join wird eine Tabelle komplett gehasht und dann jeder einzelne Tupel der anderen Relationen gehasht und auf Gleichheit überprüft. Dadurch muss der zweite Hash-Prozess abwarten, bis der erste mit der Tabelle abgeschlossen hat. In der symmetrischen Implementierung werden beide Relationen parallel vollständig gehasht und dann verglichen. Somit entfällt das Warten auf den anderen Prozess.
+Datenbanksysteme produzieren Zugriffspläne, die sequentiell abgearbeitet werden. Zur Performanzoptimierung werden zwei Implementierungen vorgenommen. Als erstes wird ein symmetrischer Hash-Join implementiert, der eine parallele Verarbeitung ermöglicht. Bei dem asymmetrischen Hash-Join wird eine Tabelle komplett gehasht und dann jeder einzelne Tupel der anderen Relationen gehasht und auf Gleichheit überprüft. Dadurch muss der zweite Hash-Prozess abwarten, bis der erste mit der Tabelle abgeschlossen hat. In der symmetrischen Implementierung werden beide Relationen parallel vollständig gehasht und dann verglichen. Somit entfällt das Warten auf den anderen Prozess.
+
+\begin{figure}[htb]
+	\begin{center}
+        \includegraphics[scale=0.5]{Bilder/s_as_hash_join.pdf}
+    	\textsf{\caption{Links ist der asymmetrische und rechts der symmetrische Hash-Join zu sehen}}
+	\end{center}
+\end{figure}
 
 Die zweite Optimierung ist die Unterteilung der Zugriffspläne in einzelne Abschnitte (Pipeline-Thread), die prinzipiell parallel ausgeführt werden. Diese Unterscheidung wird nach folgendem Algorithmus gemacht. Pankratius und Heneka haben sechs Patterns identifiziert, nach denen Sie den Zugriffsplan unterteilen und verbessern können.
 
 \begin{description}
 \item[Pattern 1:] Wenn im Zugriffsplan einen asymmetrischen Hash-Join-Knoten existiert und dieser Knoten als rechtes Kindknoten ebenfalls einen asymmetrischen Hash-Join hat, dann wird zwischen diesen beiden Hash-Joins eine Trennmarkierung für einen Pipeline-Thread eingefügt.
-\item[Pattern 2:] Wenn im linken Unterbaum ein Hash-Join-Knoten \texttt{A} existiert, auf dessen Weg zur Wurzel sich ein weiterer asymmetrischer Hash-Join-Knoten befindet, dann wird zwischen \texttt{A} und seinem Eltern-Knoten eine Trennmarkierung eingefügt
+\item[Pattern 2:] Wenn im linken Unterbaum ein Hash-Join-Knoten \texttt{A} existiert, auf dessen Weg zur Wurzel sich ein weiterer asymmetrischer Hash-Join-Knoten \texttt{B} befindet, dann wird zwischen \texttt{A} und seinem Eltern-Knoten eine Trennmarkierung eingefügt
 \item[Pattern 3:] Wenn ein Hash-Join Knoten B als direktes Kindknoten im rechten Pfad einen weiteren Hash-Join-Knoten A besitzt und im linken Unterpfad eine große Input-Relation hat und zusätzlich von B zum Wurzelknoten hin noch ein Hash-Join-Knoten gefunden wird, dann wird zwischen B und A eine Trennmarkierung eingefügt.
 \item[Pattern 4:] Wenn ein Equi-Join-Knoten identifiziert wird, der sowohl im linken als auch im rechten Kindknoten weitere Bäume hat (also kein Tablescan, Indexscan oder Blatt-Knoten), dann wird der Equi-Join mit dem symmetrischen Hash-Join ersetzt.
 \item[Pattern 5:] Wenn ein Equi-Join-Knoten gefunden wird, der als linken Unterpfad einen Baum hat und als rechten Kindknoten ein Blatt-Knoten besitzt, dann wird dieser ebenso mit einem symmetrischen Hash-Join ersetzt
 \item[Pattern 6:] Wenn für einen Equi-Join-Knoten das Verhältnis von Relationsgröße des rechten Pfades durch Relationsgröße des linken Pfades größer als 0.9 ist, dann wird auch dieser Knoten mit einem symmetrischen Hash-Join ersetzt.
 \end{description}
 
-[Bilder]
+\begin{figure}[htb]
+	\begin{center}
+        \includegraphics[scale=0.8]{Bilder/patterns_cropped2.pdf}
+    	\textsf{\caption{Bildliche Darstellung der Pattern}}
+	\end{center}
+\end{figure}
 
 Wie bereits erwähnt, ist das Auto-Tuning ein evolutionäres Modell. Dieses Modell setzt darauf, dass Anfragen mehrmals an die Datenbank gesendet werden. Als Beispiel seien hier Applikationen genannt, in denen zum Beispiel mehrere Nutzer die selbe Aktion ausführen können. Bei jeder Iteration wird ein Pattern auf den Zugriffsplan angewendet, welcher in den vorherigen Iterationen noch nicht benutzt worden ist. Dabei wird die tatsächliche Verarbeitungszeit im Log festgehalten. Wenn die Anwendung eines Pattern die Ausführung langsamer machen sollte, wird dieser bei der nächsten Iteration wieder entfernt, ansonsten wird dieser beibehalten. Kann keines der Pattern mehr angewendet werden, versucht die Datenbank zufällig zu optimieren, indem Sie Trennmarkierungen zufällig setzt oder die Buffer-Size zufällig wählt. Auch hier werden die Zeiten mitgeloggt und die Änderungen bei Erfolg beibehalten oder bei Misserfolg verworfen.
 
-Die Fähigkeit, sich in jeder Iteration selbst zu verbessern, ohne dass jemand eingreifen muss, werden von Pankratius und Heneka als Auto-Tuning bezeichnet. Auch der Performanzgewinn kann sich sehen lassen. Vorallem mit steigender Join-Anzahl und größeren Datenmengen werden bis zu 47\% an Performanz gewonnen gegenüber der normalen sequentiellen Ausführung.
+\subsubsection*{Performanzgewinn}
+Die Fähigkeit, sich in jeder Iteration selbst zu verbessern, ohne dass jemand eingreifen muss, werden von Pankratius und Heneka als Auto-Tuning bezeichnet. Auch der Performanzgewinn kann sich sehen lassen. Vorallem bei größeren Datenmengen werden bis zu 47\% an Performanz gewonnen gegenüber der normalen sequentiellen Ausführung. Allerdings werden in vielen anderen Fällen im Vergleich nur Prozentwerte im einstelligen oder unterem zweistelligen Bereich erreicht. Die ganzen Messreihen sind dem Paper im Anhang detailliert zu entnehmen.
 
 \section{Architecture Aware Hash-Join}
 \label{sec:AA-Hash-Join}
@@ -277,12 +289,8 @@ Die Spezialisierung auf SIMD Befehle bedeutet jedoch, dass die Leistung ohne ent
 In diesem Abschnitt betrachten wir noch einmal zusammenfassend die Algorithmen und betrachten den Aufwand und Nutzen.
 Die MCC-DB erreicht sehr gute Ergebnisse, sofern der Cache-Partitioner angewendet wird. Mit der MLS-Strategy kann der Performanzverlust minimal gehalten werden. Allerdings wird dazu die Hilfe des Betriebssystems benötigt. Der Cache-Partitioner funktioniert nur, wenn das OS auch abgepasst worden ist. Der Algorithmus errechnet aufgrund statischer Analysen die Optionen zur Optimierung und wendet diese mit Hilfe des Betriebssystems an.
 
-Parallel SQL Query Auto-Tuning on Multicore hingegen arbeitet lediglich mit Optimierungen am Zugriffsplan, weswegen der initiale Aufwand geringer ausfällt. Hinzu kommt, dass der Algorithmus in der Lage ist, sich selbstständig zu verbessern. In mehreren Iterationen wird versucht nach bestimmten Mustern die Verarbeitung zu verbessern. Dabei ist der Algorithmus nicht vom Betriebssystem abhängig. Weiterhin ist dieser sehr flexibel und es lassen sich prinzipiell mehr Querys erreichen als mit MCC-DB. Der Optimierungseffekt fällt dabei aber im Normalfall geringer aus als bei MCC-DB, da die Optimierung auf höherer Ebene ausfällt als bei der MCC-DB.
+Parallel SQL Query Auto-Tuning on Multicore hingegen arbeitet lediglich mit Optimierungen am Zugriffsplan, weswegen der initiale Aufwand geringer ausfällt. Hinzu kommt, dass der Algorithmus in der Lage ist, sich selbstständig zu verbessern. In mehreren Iterationen wird versucht nach bestimmten Mustern die Verarbeitung zu verbessern. Dabei ist der Algorithmus nicht vom Betriebssystem abhängig. Weiterhin ist dieser sehr flexibel und es lassen sich prinzipiell mehr Querys erreichen als mit MCC-DB. Der Optimierungseffekt fällt dabei aber im Normalfall geringer aus als bei MCC-DB, da die Optimierung auf höherer Ebene stattfindet als bei der MCC-DB.
 
 Architecture Aware Hash-Join ist eine reine Optimierung des Hash-Joins, einem der rechenintensiven Datenbankoperationen. Der Algorithmus ist auf eine spezielle Architektur angewiesen, Intels SMT-Prozessoren. Durch geschickte Cache-Nutzung in Kombination mit der Parallelität kann die Leistung des Hash-Joins erheblich verbessert werden. 8 Prozesse beschleunigen den Join um einen Faktor zwischen 2 und 4,9. 
 
 Alligned Access Sort ist ein reiner Sortieralgorithmus und daher nicht nur an Datenbankanwendungen gebunden. Ähnlich wie bei dem AA-Hash Join ist das Ziel eine geschickte Cache-Nutzung und paralleler Verarbeitung. Dabei setzt er auf bekannten Sortierverfahren auf, optimiert diese jedoch so, dass er um einen Faktor von 3 schneller ist als andere Sortieralgorithmen. AA-Sort baut auf SIMD-Prozessorbefehlen auf, die jedoch von allen moderneren Prozessoren unterstützt werden. Da AA-Sorts finale Leistung von den zu sortierenden Daten abhängt muss der genaue Leistungsgewinn bei Datenbank-Systemen jedoch noch in der Praxis erprobt werden.
-%\section{Aggregation}
-%\label{sec:Aggregation}
-
-%Shared Hash Tables vs multiple Hash Tables for each core ... \cite{CIESLEWICZ} (Vielleicht ein interessantes Paper ... )

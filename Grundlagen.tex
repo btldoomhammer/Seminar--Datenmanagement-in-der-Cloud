@@ -6,28 +6,17 @@ In diesem Kapitel werden die Grundlagen und Begrifflichkeiten für die späteren
 \subsection*{Multithread und Multicore}
 Als Thread wird ein separater Prozess auf einem Kern bezeichnet. Auf einem Kern können mehrere Threads laufen, was als Multithreading bezeichnet wird. Kommen auf einem Chip mehrere Prozessorkerne zum Einsatz, so wird dies als Multicore bezeichnet. Auf jedem dieser einzelnen Kerne können noch einmal mehrere Threads arbeiten.
 
-Sowohl Multithread als auch Multicore-Architekturen zählen nach \cite{GARCIA} zu der Klasse der \texttt{uniform heterogeneous multithreaded (UHM)} Prozessoren. Das Merkmal dieser Klasse ist, dass die verschiedenen Threads (unabhängig auf welchem Kern) einen gemeinsamen Speicher besitzen, auf dem beide operieren. Unter Uniform ist zu verstehen, dass die Prozessorkerne an sich sehr ähnlich ist. Darunter fällt zum Beispiel \textbf{nicht} das Zusammenspiel zwischen CPU-Kern und einem Grafikprozessor.
-
-SIMD(Single Instruction Multiple Data) Selbe Instruktion arbeitet mit mehreren Daten aus Pool.
-
-%\subsection*{Die drei Dimensionen von Parallelismus}
-%Im Datenbankkontext können nach \cite{HUBER} Ausführungen von Queryanfragen in drei Dimensionen von Parallelismus eingeteilt werden.
-%
-%\begin{description}
-%\item[Interquery Parallelismus] bezeichnet die Anzahl der Queries, die parallel ausgeführt werden können.
-%\item[Interoperator Parallelismus] definiert die Anzahl der Operatoren in einem einzigen Query, die parallel ausgeführt werden können.
-%\item[Intraoperator Parallelismus] zeigt an, bis zu welchem Grad ein einziger Operator parallelisiert werden kann.
-%\end{description}
+Sowohl Multithread als auch Multicore-Architekturen zählen nach \cite{GARCIA} zu der Klasse der \texttt{uniform heterogeneous multithreaded (UHM)} Prozessoren. Das Merkmal dieser Klasse ist, dass die verschiedenen Threads (unabhängig auf welchem Kern) einen gemeinsamen Speicher besitzen, auf dem beide operieren. Unter Uniform ist zu verstehen, dass die Prozessorkerne an sich sehr ähnlich ist. Darunter fällt zum Beispiel \textbf{nicht} das Zusammenspiel zwischen CPU-Kern und einem Grafikprozessor. Das dies dennoch prinzipiell möglich ist wird im Anschluss im Kapitel Ausblick noch einmal aufgegriffen.
 
 \section{Multicore}
 \label{sec:Multicore}
-Die Multicore-Architektur kann vereinfacht wie in Abbildung \ref{fig:multicore} dargestellt werden. Jeder Kern hat einen eigenen Cache, auf dem er operieren kann (L1-Cache). Es existieren Architekturen, wo jeder Kern mehrere eigene Caches besitzt, allerdings werden aus Kostengründen meist nur ein direkter Cache eingebaut und dafür der Last-Level-Cache (im Bild L2-Cache) etwas größer gestaltet. Auf dem  Last-Level-Cache operieren beide Kerne.
+Die Multicore-Architektur kann vereinfacht wie in Abbildung \ref{fig:multicore} dargestellt werden. Jeder Kern hat einen eigenen Cache, auf dem er operieren kann (L1-Cache). Es existieren Architekturen, wo jeder Kern mehrere eigene Caches besitzt, allerdings wird aus Kostengründen meist nur ein direkter Cache eingebaut und dafür der Last-Level-Cache (im Bild L2-Cache) etwas größer gestaltet. Auf dem  Last-Level-Cache operieren beide Kerne.
 
 \begin{figure}[htbp]
 	\begin{center}
         \includegraphics[scale=0.5]{Bilder/multicore.pdf}  
-    	\textsf{\caption{Vereinfachte Ansicht auf die Cache-Struktur zwischen den Kernen und dem Arbeitsspeicher}}
-		\label{fig:multicore}
+    	\textsf{\caption{Vereinfachte Ansicht auf die Cache-Struktur zwischen den Kernen und dem Arbeitsspeicher} \label{fig:multicore}}
+		
 	\end{center}
 	 
 \end{figure}
@@ -46,8 +35,8 @@ Ein weiteres Problem ist, dass die Leistungsoptimierung durch die neue Prozessor
 
 \section{Datenbank Operationen}
 \label{sec:Operationen}
-In den meisten Szenarien werden auf Datenbanken deutlich mehr Lese- als Schreiboperationen durchgeführt. Aufgrund dieser Tatsache werden wir in unserer Ausarbeitung den Augenmerk auf lesende Operationen legen. Weiterhin bieten diese Operationen mehr Potential zur Optimierung. Eine besonders wichtige Operation im Umfeld der relationen Datenbanken ist der Verbund (Join), einer der rechenintensivsten und teuersten Operation. Die Daten sind in fast allen Fällen über mehrere Tabellen verteilt, um den Normalformen zu genügen. Der Endnutzer betrachtet immer nur die aufbereiteten Enddaten, die wieder zusammengefügt werden.
+In den meisten Szenarien werden auf Datenbanken deutlich mehr Lese- als Schreiboperationen durchgeführt. Aufgrund dieser Tatsache werden wir in unserer Ausarbeitung den Augenmerk auf lesende Operationen legen. Weiterhin bieten diese Operationen mehr Potenzial zur Optimierung. Eine besonders wichtige Operation im Umfeld der relationalen Datenbanken ist der Verbund (Join), einer der rechenintensivsten und teuersten Operationen. Die Daten sind in fast allen Fällen über mehrere Tabellen verteilt, um den Normalformen zu genügen. Der Endnutzer betrachtet immer nur die aufbereiteten Enddaten, die wieder zusammengefügt werden.
 
 In diesem Kontext hat sich der Hash-Join für Equal-Joins etabliert, da die Kosten mit steigender Tabellengröße nicht so schnell anwächst wie andere Algorithmen. 
 
-Andere Operationen wie \texttt{INSERT}, \texttt{UPDATE} und \texttt{DELETE} werden in dieser Ausarbeitung nicht beachtet.
+Andere Operationen wie \texttt{INSERT}, \texttt{UPDATE} und \texttt{DELETE} werden daher in dieser Ausarbeitung nicht beachtet.
