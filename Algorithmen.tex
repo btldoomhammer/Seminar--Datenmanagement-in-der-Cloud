@@ -60,7 +60,14 @@ Wenn wir nun die dritte Komponente hinzunehmen, den Cache-Partitioner, dann kann
 \end{figure}
 
 \subsubsection*{Performanzgewinn}
-Folgende Abbildung zeigt den Performanzgewinn, der durch die MCC-DB erreicht wird (entnommen aus \cite{LEE})
+Folgende Abbildung zeigt den Performanzgewinn, der durch die MCC-DB erreicht wird (entnommen aus \cite{LEE}).
+
+\begin{figure}[htb]
+	\begin{center}
+        \includegraphics[scale=0.25]{Bilder/mcc_db_chart.pdf}
+    	\textsf{\caption{Links ist die Auswahl der auszuführenden Operationen nach SLS-Policy, rechts nach MLS-Policy}}
+	\end{center}
+\end{figure}
 
 Wir sehen, dass ohne Cache-Partitioning bereits ein Erfolg zu sehen ist. Auf der X-Achse ist der Geschwindigkeitsverlust gekennzeichnet, auf der Y-Achse ist die Größe der Hash-Tabelle der Joins aufgeführt. Während der Effekt bei SLS von der Größe der Hash-Tabelle abhängt, arbeitet MLS mit Cache-Partitioner konstat gut mit einer hohen Effizienz.
 

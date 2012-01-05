@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.11 (MiKTeX 2.9) (preloaded format=pdflatex 2011.11.3)  5 JAN 2012 14:48
+This is pdfTeX, Version 3.1415926-1.40.11 (MiKTeX 2.9) (preloaded format=pdflatex 2011.11.3)  5 JAN 2012 16:07
 entering extended mode
 **Datenmanagement*in*der*Cloud.tex
 
@@ -989,32 +989,38 @@ Underfull \hbox (badness 10000) in paragraph at lines 25--26
 File: Bilder/sls_mls.pdf Graphic file (type pdf)
 
 <use Bilder/sls_mls.pdf>
-Underfull \hbox (badness 10000) in paragraph at lines 69--70
+<Bilder/mcc_db_chart.pdf, id=246, 844.95674pt x 597.432pt>
+File: Bilder/mcc_db_chart.pdf Graphic file (type pdf)
+
+<use Bilder/mcc_db_chart.pdf>
+Underfull \hbox (badness 10000) in paragraph at lines 76--77
 
  []
 
 [12 <C:/Users/tuatran/Downloads/PortableGit-1.7.6-preview20110709/Seminar--Date
-nmanagement-in-der-Cloud/Bilder/sls_mls.pdf>] [13]
+nmanagement-in-der-Cloud/Bilder/sls_mls.pdf> <C:/Users/tuatran/Downloads/Portab
+leGit-1.7.6-preview20110709/Seminar--Datenmanagement-in-der-Cloud/Bilder/mcc_db
+_chart.pdf>] [13]
 
-LaTeX Warning: Citation `CHEN' on page 14 undefined on input line 93.
+LaTeX Warning: Citation `CHEN' on page 14 undefined on input line 100.
 
 [14] [15] [16] [17]
-Overfull \hbox (11.6379pt too wide) in paragraph at lines 148--149
+Overfull \hbox (11.6379pt too wide) in paragraph at lines 155--156
 \OT1/cmr/m/n/12 durch ge-schick-tes Auf-tei-len Cache-Misses zu re-du-zie-ren u
 nd Pre-fet-ching zu ber[]ucksichtigen.
  []
 
 [18] [19] [20]
-Overfull \hbox (4.53561pt too wide) in paragraph at lines 194--195
+Overfull \hbox (4.53561pt too wide) in paragraph at lines 201--202
 []\OT1/cmr/m/n/12 Durch die-ses Her-an-ge-hen wer-den die bei-den an-ge-spro-ch
 e-nen Pro-ble-me der \OT1/cmr/m/it/12 Gap\OT1/cmr/m/n/12 -Bildung
  []
 
-[21]
+[21] [22]
 
-LaTeX Warning: Citation `GOVINDARAJU' on page 22 undefined on input line 206.
+LaTeX Warning: Citation `GOVINDARAJU' on page 23 undefined on input line 213.
 
-[22] [23])
+[23])
 (C:\Users\tuatran\Downloads\PortableGit-1.7.6-preview20110709\Seminar--Datenman
 agement-in-der-Cloud\Ausblick.tex [24]
 Kapitel 4.
@@ -1048,12 +1054,15 @@ anged.
 
 LaTeX Warning: There were undefined references.
 
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
  ) 
 Here is how much of TeX's memory you used:
- 10747 strings out of 494019
- 163303 string characters out of 3148236
+ 10753 strings out of 494019
+ 163447 string characters out of 3148236
  275955 words of memory out of 3000000
- 13716 multiletter control sequences out of 15000+200000
+ 13720 multiletter control sequences out of 15000+200000
  11956 words of font info for 45 fonts, out of 3000000 for 9000
  714 hyphenation exceptions out of 8191
  52i,8n,58p,1379b,424s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -1065,9 +1074,9 @@ msfonts/cm/cmr17.pfb><C:/Program Files/MiKTex/fonts/type1/public/amsfonts/cm/cm
 r8.pfb><C:/Program Files/MiKTex/fonts/type1/public/amsfonts/cm/cmssbx10.pfb><C:
 /Program Files/MiKTex/fonts/type1/public/amsfonts/cm/cmti12.pfb><C:/Program Fil
 es/MiKTex/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
-Output written on "Datenmanagement in der Cloud.pdf" (30 pages, 315808 bytes).
+Output written on "Datenmanagement in der Cloud.pdf" (30 pages, 403699 bytes).
 PDF statistics:
- 641 PDF objects out of 1000 (max. 8388607)
- 99 named destinations out of 1000 (max. 500000)
- 176 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 648 PDF objects out of 1000 (max. 8388607)
+ 100 named destinations out of 1000 (max. 500000)
+ 181 words of extra memory for PDF output out of 10000 (max. 10000000)
 
