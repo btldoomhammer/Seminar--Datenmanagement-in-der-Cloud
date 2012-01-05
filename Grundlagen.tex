@@ -8,8 +8,6 @@ Als Thread wird ein separater Prozess auf einem Kern bezeichnet. Auf einem Kern 
 
 Sowohl Multithread als auch Multicore-Architekturen zählen nach \cite{GARCIA} zu der Klasse der \texttt{uniform heterogeneous multithreaded (UHM)} Prozessoren. Das Merkmal dieser Klasse ist, dass die verschiedenen Threads (unabhängig auf welchem Kern) einen gemeinsamen Speicher besitzen, auf dem beide operieren. Unter Uniform ist zu verstehen, dass die Prozessorkerne an sich sehr ähnlich ist. Darunter fällt zum Beispiel \textbf{nicht} das Zusammenspiel zwischen CPU-Kern und einem Grafikprozessor.
 
-[Bild Multicore]
-
 SIMD(Single Instruction Multiple Data) Selbe Instruktion arbeitet mit mehreren Daten aus Pool.
 
 %\subsection*{Die drei Dimensionen von Parallelismus}
@@ -23,6 +21,16 @@ SIMD(Single Instruction Multiple Data) Selbe Instruktion arbeitet mit mehreren D
 
 \section{Multicore}
 \label{sec:Multicore}
+Die Multicore-Architektur kann vereinfacht wie in Abbildung \ref{fig:multicore} dargestellt werden. Jeder Kern hat einen eigenen Cache, auf dem er operieren kann (L1-Cache). Es existieren Architekturen, wo jeder Kern mehrere eigene Caches besitzt, allerdings werden aus Kostengründen meist nur ein direkter Cache eingebaut und dafür der Last-Level-Cache (im Bild L2-Cache) etwas größer gestaltet. Auf dem  Last-Level-Cache operieren beide Kerne.
+
+\begin{figure}[htbp]
+	\begin{center}
+        \includegraphics[scale=0.5]{Bilder/multicore.pdf}  
+    	\textsf{\caption{Vereinfachte Ansicht auf die Cache-Struktur zwischen den Kernen und dem Arbeitsspeicher}}
+		\label{fig:multicore}
+	\end{center}
+	 
+\end{figure}
 
 \subsection*{Vorteile}
 \label{sec:Multicore_Vorteile}

@@ -1,5 +1,7 @@
 \chapter{Algorithmen}
 \label{sec:Algorithmen}
+Es gibt verschiedene Ansätze und Algorithmen, die es Datenbanken erlauben Multicore-Prozessoren zu unterstützen. Das größte Problem dabei ist die Verwaltung des Speichers und des Caches. So ist das Ziel, Cache-Zugriffe durch intelligente Cachenutzung und Prefetching zu optimieren um die Grundlage für mehrere parallele Prozesse zu legen.
+
 Im folgenden werden 4 Algorithmen ausgewählt und vorgestellt. Dabei handelt es sich um Ansätze aus verschiedenen Bereichen des Datenbank-Systems. Aligned Access-Sort ist ein reiner Sortieralgorithmus, während der Architecture Aware-Hash Join ebenfalls nur den Hash Join optimiert. Der Minimizing Cache Conflicts Ansatz baut auf eine globale Betrachtung der Anforderungen auf und der Parallel Query Auto-Tuner zielt auf die Optimierung des Zugriffsplans. Doch trotz der sehr unterschiedlichen Betrachtungsweise sind dies alles vielversprechende Ansätze der Nutzung von Multicore-CPUs.
 
 
@@ -21,12 +23,19 @@ Es werden drei Arten von Locality Strength definiert:
 \end{description}
 
 Aus den drei Arten folgt auch, inwieweit Sie sich gegenseitig beeinflussen. Folgende Tabelle zeigt die gegenseitige Beeinflussung der verschiedenen Lokalitäten bei paralleler Ausführung (ohne Cache-Partitionierung).\\
-\begin{tabular}{|l|l|l|l|} \hline
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{|l|l|l|l|} \hline
  & Strong & Moderate & Weak \\ \hline
 Strong & Wenig & Mittel & Hoch \\ \hline
 Moderate & Mittel & Hoch & Hoch \\ \hline
 Weak & Wenig & Wenig & Wenig \\ \hline
-\end{tabular}
+	\end{tabular}
+	\caption{Gegenseitige Beeinflussung der Lokalitäten}
+\end{table}
+
+
 
 Die erste Spalte gibt die Locality Strength des Runners (zu beobachtender Prozess) und die erste Zeile die Lokalität der Co-Runners. Anhand dieser Matrix ist die Entscheidung zu treffen, welche Queries parallel ablaufen sollen. Wir sehen, dass die meiste Beeinflussung dadurch stattfindet, wenn zu einem Prozess mit Strong oder Moderate Locality ein Prozess mit schwacher Lokalität gestartet wird.
 Der Grund ist, dass schwache Lokalitäten den Cache mit vielen Daten belegen (Cache Pollution) und den Platz für andere wegnehmen, während bei zwei schwachen Lokalitäten sowieso nicht komplett in den Cache passen (Capacity Contention).
@@ -42,6 +51,13 @@ Die dritte Komponente ist der Cache Partitioner. Dieser ist dazu nötig, im Last
 Als erstes betrachten wir die Entscheidungsfindung ohne Cache-Partitioning. In diesem Algorithmus werden die Zugriffspläne in zwei Queues aufgeteilt. Die Eine Queue enthält die Zugriffspläne mit den Lokalitäten Strong und Moderate gehalten, die andere Queue umfasst alle Pläne mit Weak-Locality. Aufgrund der Matrix (siehe Tabelle) verfolgt die MCC-DB eine \texttt{\textit{Same Locality Strength}} (im Folgendem SLS) Policy. Diese lässt immer nur zwei Queries gleichzeitig laufen, wenn diese aus der selben Queue stammen. Damit wird sichergestellt, dass die Prozesse sich gegenseitig nicht stark beeinflussen. Der Nachteil hierbei ist, dass zwei Prozesse mit Moderate Locality laufen können, die sich gegenseitig stark beeinflussen.
 
 Wenn wir nun die dritte Komponente hinzunehmen, den Cache-Partitioner, dann kann jedem Prozess ein bestimmter Speicherbereich im Cache zugewiesen werden, welcher nicht von anderen Prozessen überschrieben werden kann. Dadurch wird schon einmal Cache Pollution ausgeschlossen. Mit dieser Komponente wird nun statt SLS die \texttt{\textit{Mixed Locality Strength}} (im Folgendem MLS) Policy verfolgt. Nun werden aus den bereits erwähnten Queues immer jeweils einer aus unterschiedlichen Queues ausgewählt und gleichzeitig ausgeführt. Die Aufgabe vom Optimizer ist nun, die Anzahl der Elemente in beiden Queues im Gleichgewicht zu halten. Dies kann der Optimizer tun, indem er bei der Auswahl der Zugriffspläne die Länge der Queues mit in die Entscheidung einbezieht.
+
+\begin{figure}[htbp]
+	\begin{center}
+        \includegraphics[scale=0.6]{Bilder/sls_mls.pdf}
+    	\textsf{\caption{Links ist die Auswahl der auszuführenden Operationen nach SLS-Policy, rechts nach MLS-Policy}}
+	\end{center}
+\end{figure}
 
 \subsubsection*{Performanzgewinn}
 Folgende Abbildung zeigt den Performanzgewinn, der durch die MCC-DB erreicht wird (entnommen aus \cite{LEE})
