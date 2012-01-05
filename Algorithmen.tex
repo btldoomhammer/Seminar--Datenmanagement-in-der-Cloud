@@ -105,11 +105,23 @@ Als ersten Schritt werden die Prozesse erzeugt, die vom AA Hash Join verwendet w
 
 Das bestimmen der Größe der Cluster geschieht anhand spezieller Einschränkungen durch die Größe des verwendeten Caches. Moderne CPUs verfügen über L1 und L2 Cache. L1 Cache ist auf moderneren CPUs zwischen 64 und 256 KByte groß, während L2 Cache normalerweise bis zu 512 KByte groß sein kann. Da das Ziel des Algorithmus ist, möglichst viele Prozesse auf der selben Datenbasis arbeiten zu lassen, muss zuerst zwischen zwei Fällen unterschieden werden. Bei SMT CPU-Architektur  liegen auf einem Kern zwei Prozesse, die jedoch beide parallel auf den L1 Cache zugreifen können. Im Falle einer SMT Singlecore-CPU bedeutet das, dass der gesamte L1 Cache genutzt werden kann um den Indexcluster R\textsubscript{n} aufzunehmen. Schließlich kann zusätzlich der L2 Cache für die Tupel der größeren Relation S verwendet werden. In diesem Fall ist also die Größe des Indexclusters gleich der Größe des L1 Caches.
 
-Gibt es mehr als einen Kern, so sieht das schon anders aus. Bei einem 4-Kern Prozessor beispielsweise gibt es 8 Prozesse, jedoch können über den L1 Cache nur jeweils 2er Pärchen ihre Daten teilen. Daher muss in diesem Fall der Indexcluster im L2 Cache aufgebaut werden. Dadurch wird zwar die Größe des verwendbaren Speichers für den Gesamtalgorithmus beeinflusst und der langsamere L2 Cache wird dem schnelleren L1 vorgezogen. Durch die Parallelität wird dieser Verlust jedoch wieder ausgeglichen. Dennoch muss ein optimaler Wert für den für die Cluster reservierten Speicher gefunden werden. Denn nun müssen sowohl der Indexcluster Rn, also auch die Tupel von R in den Cache passen. Zusätzlich muss Platz bleiben für einige Tupel der S Relation für die spätere Phase der Durchsuchung und auch das Betriebssystem braucht noch Platz für seine eigenen Prozesse. Da die Größe der Hash-Tabelle vor dem Hashen nicht bekannt ist, muss hier eine \textit{Grenze} abgeschätzt werden, der ausreichend Platz bietet. Dies wird in \cite{GARCIA} mit der einfachen Formel: (Größe-R-Relation + Größe-Hashtabelle)/ \textit{Grenze} < Größe-L2-Cache abgeschätzt.
+Gibt es mehr als einen Kern, so sieht das schon anders aus. Bei einem 4-Kern Prozessor beispielsweise gibt es 8 Prozesse, jedoch können über den L1 Cache nur jeweils 2er Pärchen ihre Daten teilen. Daher muss in diesem Fall der Indexcluster im L2 Cache aufgebaut werden. Dadurch wird zwar die Größe des verwendbaren Speichers für den Gesamtalgorithmus beeinflusst und der langsamere L2 Cache wird dem schnelleren L1 vorgezogen. Durch die Parallelität wird dieser Verlust jedoch wieder ausgeglichen. Dennoch muss ein optimaler Wert für den für die Cluster reservierten Speicher gefunden werden. Denn nun müssen sowohl der Indexcluster Rn, also auch die Tupel von R in den Cache passen. Zusätzlich muss Platz bleiben für einige Tupel der S Relation für die spätere Phase der Durchsuchung und auch das Betriebssystem braucht noch Platz für seine eigenen Prozesse. Da die Größe der Hash-Tabelle vor dem Hashen nicht bekannt ist, muss hier eine \textit{Grenze} abgeschätzt werden, der ausreichend Platz bietet. Dies wird in \cite{GARCIA} mit der einfachen Formel: (Größe-R-Relation + Größe-Hashtabelle)/ \textit{Grenze} \textless  Größe-L2-Cache abgeschätzt.
 
 Aber egal ob reiner SMT oder ein Mehrkern-Prozessor vorliegt, die Indextabelle von R wird anhand der Anzahl Prozesse in gleich große Teile zerteilt und an die Prozesse verteilt. Hierbei muss die genaue Struktur der CPU berücksichtigt werden. Bei Intels Quad-Core Architektur beispielsweise teilen sich 2 Kerne ihren L2 Cache. Also können somit 4 Prozesse ihre Hashtabelle teilen. Diese Prozessgruppen erledigen in den kommenden beiden Phasen ihre Arbeiten gemeinsam.
 
-Am Ende dieser Phase ist die R-Relation in gleichgroße Teile aufgeteilt und jede dieser Teile ist in mehrere Cluster ähnlicher Schlüssel gegliedert.
+Am Ende dieser Phase ist die R-Relation in gleichgroße Teile aufgeteilt und jede dieser Teile ist in mehrere Cluster ähnlicher Schlüssel gegliedert. Dies ist in Abb. \ref{AAHS_Cluster} dargestellt.
+
+\begin{figure}[htbp]
+	\begin{center}
+        \includegraphics[scale=0.4]{Bilder/Clusterbildung.png}  
+    	\textsf{
+    		\caption{Die Relation R wird in \textit{n} Teile zerlegt, die wiederum in \textit{m} Cluster ähnlicher Schlüssel zerlegt werden.}
+    		\label{AAHS_Cluster}
+    		}
+		
+	\end{center}
+	 
+\end{figure}
 
 \subsubsection*{Aufbauphase}
 \label{sec:AA_Hash-Join_Aufbauphase}
@@ -137,9 +149,6 @@ Dieser Schritt ist der rechenintensivste des AA-Hash Join Algorithmus. Da der Al
 \label{sec:AA_Hash-Join_Zusammenfassung}
 
 Die größere Relation S und die kleinere Relation S werden beide in \textit{n} Teile aufgeteilt. Jeder dieser Teile wird in \textit{m} Cluster zerlegt, so dass \textit{n*m} Cluster pro Relation entstehen, wobei jeder Prozess \textit{m} Cluster besitzt. Eine Hashtabelle besteht aus \textit{n} Clusters – aus jedem Prozess einem – so dass sich die Hashtabelle aus den Clustern ähnlicher Schlüssel bildet.
-
-
-[BILDER!!]
 
 
 \subsubsection*{Leistung}
@@ -187,16 +196,58 @@ Um diese Probleme des \textit{combsorts} zu umgehen und SIMD zu verwenden, setzt
 (3) Die \textit{Vertauschte Form} wird wieder in die Originalform überführt
 
 
-Durch diese Schritte wird ein \textit{combsort}-ähnliches Verhalten erzeugt, das jedoch nur \textit{Gaps} von Vielfachen der Blockaufteilung besitzt. Der erste Schritt entspricht dem \textit{combsort} mit den \textit{Gaps} N/n, N/n*2, N/n*3, wobei n die Anzahl Elemente pro Block ist und N die Anzahl aller Elemente. Diese Sortierung lässt sich mit Vectorbefehlen aus dem SIMD Befehlssatz problemlos und ohne viel Rechenaufwand lösen da die Blöcke ja bereits in passender 128 Bit Größe vorliegen.
+Durch diese Schritte wird ein \textit{combsort}-ähnliches Verhalten erzeugt, das jedoch nur \textit{Gaps} von Vielfachen der Blockaufteilung besitzt. Der erste Schritt(siehe Abb. \ref{AAS_Block}) entspricht dem \textit{combsort} mit den \textit{Gaps} N/n, N/n*2, N/n*3, wobei n die Anzahl Elemente pro Block ist und N die Anzahl aller Elemente. Diese Sortierung lässt sich mit Vectorbefehlen aus dem SIMD Befehlssatz problemlos und ohne viel Rechenaufwand lösen da die Blöcke ja bereits in passender 128 Bit Größe vorliegen.
 
-Der zweite Schritt tauscht nun die Elemente zwischen den einzelnen Blocken in die Vertauschte Form. Dafür wird der combsort-Algorithmus nun nicht für einzelne Elemente, sondern auf Blockebene durchgeführt. Jeder Vergleich zweier Blöcke (hier A und B) besteht dabei aus zwei Teilen. Zuerst werden alle Elemente aus A mit den korrespondierenden Elementen aus B vertauscht, so das die kleineren Werte in A stehen. Dann wird das Selbe erneut durchgeführt. Diesmal werden jedoch die ersten 1 bis \textit{n}-1 Werte aus A mit den Werte 2 bis \textit{n} aus B verglichen. Dies ersetzt zwar die innere Schleife des \textit{combsort} durch zwei Schleifen, jedoch können nun die Vergleiche auf Basis der SIMD Vectorbefehle ausgeführt werden. Der dritte Schritt sortiert die einzelnen Blöcke erneut, aufsteigend.
+Der zweite Schritt tauscht nun die Elemente zwischen den einzelnen Blocken in die Vertauschte Form(siehe Abb. \ref{AAS_Block}). Dafür wird der combsort-Algorithmus nun nicht für einzelne Elemente, sondern auf Blockebene durchgeführt. Jeder Vergleich zweier Blöcke (hier A und B) besteht dabei aus zwei Teilen. Zuerst werden alle Elemente aus A mit den korrespondierenden Elementen aus B vertauscht, so das die kleineren Werte in A stehen. Dann wird das Selbe erneut durchgeführt. Diesmal werden jedoch die ersten 1 bis \textit{n}-1 Werte aus A mit den Werte 2 bis \textit{n} aus B verglichen. Diese beiden Schritte sind in Abb. \ref{AAS_Vectorswap} zu sehen. Dies ersetzt zwar die innere Schleife des \textit{combsort} durch zwei Schleifen, jedoch können nun die Vergleiche auf Basis der SIMD Vectorbefehle ausgeführt werden. Der dritte Schritt sortiert die einzelnen Blöcke erneut, aufsteigend(siehe Abb. \ref{AAS_Transposed_Order}).
 
 Durch dieses Herangehen werden die beiden angesprochenen Probleme der \textit{Gap}-Bildung von zu Kleinen oder nicht Vielfachen der Blockaufteilung vermieden. Teile der combsort-Schleifen werden einfach auf andere Operationen abgebildet. Die verbleibende Schleife kann dann mit dem Selben Schema und der Division durch 1,3 auf der Ebene der Blöcke durchgeführt werden. Insgesamt hat der in-core Algorithmus eine Laufzeit von O(n log( n) ) im Durchschnitt und O(n\textsuperscript{2}) im schlechtesten Fall. Der große Vorteil gegenüber anderen Sortierverfahren, die auch im schlechtesten Fall O(n log(n) ) erreichen, ist die Verwendung von SIMD Befehlen, so das Zugriffe auf den Speicher reduziert und Cache-Misses vermieden werden. Die benötigten Werte werden bereits im 128 Bit-Datenteil mitgeliefert und müssen nicht mehr separat aus dem Speicher geladen werden. Dadurch ist dieses Verfahren deutlich schneller. Dennoch ist die Sortierung nicht abgeschlossen, es wurde nur eine Blockaufteilung erzeugt, die einem bekannten Schema folgt. Die finale Sortierung wird im nächsten Algorithmusteil, dem  out-of-core Algorithmus durchgeführt.
+
+
+\begin{figure}[htbp]
+	\begin{center}
+        \includegraphics[scale=0.5]{Bilder/AAS_Vor_Sortierung.png}  
+    	\textsf{
+    		\caption{Die zu sortierenden Daten werden in 128-Bit Blöcke zerlegt, sortiert und in die \textit{Vertauschte Form} gebracht.}
+    		\label{AAS_Block}
+    		}
+	\end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+	\begin{center}
+        \includegraphics[scale=0.5]{Bilder/AAS_Vectorvertauschung.png}  
+    	\textsf{
+    		\caption{Diese beiden Vertauschungsschritte sind leicht mit SIMD Befehlen umzusetzen und erlauben es den \textit{combsort} auf Blockebene anzuwenden.}
+    		\label{AAS_Vectorswap}
+    		}
+	\end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+	\begin{center}
+        \includegraphics[scale=0.5]{Bilder/AAS_Nach_Sortierung.png}  
+    	\textsf{
+    		\caption{Die sortierte \textit{Vertauschte Form}(links) wird wieder zurückgeführt in die originale Aufteilung(rechts). Die Rückführung geschieht im in-core Algorithmus.}
+    		\label{AAS_Transposed_Order}
+    		}
+	\end{center}
+\end{figure}
+
 
 \subsubsection*{Out-of-core Algorithmus}
 \label{sec:AA-Sort_Out_Of_Core}
 
-Am Ende des in-core Schrittes ist jeder Block in sich selbst sortiert und existiert in der bekannten Struktur der Vertauschten Form. Der out-of-core Algorithmus sortiert nun die Blöcke zurück in eine zusammenhängende Form. Auch diese Sortierung setzt auf den SIMD Befehlssatz. Hier wird jedoch auf einen \textit{mergesort} zurückgegriffen. Zwei Blöcke mit P Elementen lassen sich dabei in log(P) +1 Schritten sortieren. Jeder Schritt führt nur einen Vectorvergleich, zwei Vectorauswahlen und ein bis zwei Vectorvertauschungen aus. Da die \textit{Vertauschte Form}, in denen die Elemente vorsortiert sind bekannt ist, kann dieses Wissen genutzt werden. Dadurch reduziert sich die Anzahl der bedingten Verzweigungen im Quellcode auf eine Verzweigung pro P Elemente aufgrund ihrer Blockform. Ohne dieses Vorarbeit wäre es eine Verzweigung pro Element und nicht nur pro Block. Da jede Verzweigung potenziell ist mit einem Pipeline-Abbruch gleichgesetzt werden kann, ist der vorgestellte Algorithmus durch die Vertauschte Form performanter. Die Laufzeit des out-of-core Algorithmus ist O(n).
+Am Ende des in-core Schrittes ist jeder Block in sich selbst sortiert und existiert in der bekannten Struktur der Vertauschten Form. Der out-of-core Algorithmus sortiert nun die Blöcke zurück in eine zusammenhängende Form(siehe Abb.\ref{AAS_Transposed_Order}). Auch diese Sortierung setzt auf den SIMD Befehlssatz. Hier wird jedoch auf einen \textit{mergesort} zurückgegriffen, wie in Abb. \ref{AAS_Mergesort} gezeigt. Zwei Blöcke mit P Elementen lassen sich dabei in log(P) +1 Schritten sortieren. Jeder Schritt führt nur einen Vectorvergleich, zwei Vectorauswahlen und ein bis zwei Vectorvertauschungen aus. Da die \textit{Vertauschte Form}, in denen die Elemente vorsortiert sind bekannt ist, kann dieses Wissen genutzt werden. Dadurch reduziert sich die Anzahl der bedingten Verzweigungen im Quellcode auf eine Verzweigung pro P Elemente aufgrund ihrer Blockform. Ohne dieses Vorarbeit wäre es eine Verzweigung pro Element und nicht nur pro Block. Da jede Verzweigung potenziell ist mit einem Pipeline-Abbruch gleichgesetzt werden kann, ist der vorgestellte Algorithmus durch die Vertauschte Form performanter. Die Laufzeit des out-of-core Algorithmus ist O(n).
+
+\begin{figure}[htbp]
+	\begin{center}
+        \includegraphics[scale=0.5]{Bilder/mergesort_variant.png}  
+    	\textsf{
+    		\caption{Wissen über die Struktur der \textit{Vertauschte Form} erlaubt es, zwei Blöcke mit \textit{mergesort} in wenigen SIMD Vectoroperationen zu sortieren.}
+    		\label{AAS_Mergesort}
+    		}
+	\end{center}
+\end{figure}
 
 \subsubsection*{Zusammenfassung}
 \label{sec:AA-Sort_Zusammenfassung}
