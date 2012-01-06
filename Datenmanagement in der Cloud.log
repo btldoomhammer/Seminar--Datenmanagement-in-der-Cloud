@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.11 (MiKTeX 2.9) (preloaded format=pdflatex 2011.11.3)  5 JAN 2012 23:37
+This is pdfTeX, Version 3.1415926-1.40.11 (MiKTeX 2.9) (preloaded format=pdflatex 2011.11.3)  6 JAN 2012 13:03
 entering extended mode
 **Datenmanagement*in*der*Cloud.tex
 
@@ -997,12 +997,12 @@ Underfull \hbox (badness 10000) in paragraph at lines 75--76
 
  []
 
-<Bilder/s_as_hash_join.pdf, id=616, 517.13202pt x 207.97699pt>
+<Bilder/s_as_hash_join.pdf, id=617, 517.13202pt x 207.97699pt>
 File: Bilder/s_as_hash_join.pdf Graphic file (type pdf)
 
 <use Bilder/s_as_hash_join.pdf> [13 <C:/Users/tuatran/Downloads/PortableGit-1.7
 .6-preview20110709/Seminar--Datenmanagement-in-der-Cloud/Bilder/s_as_hash_join.
-pdf>] <Bilder/patterns_cropped2.pdf, id=829, 614.295pt x 130.086pt>
+pdf>] <Bilder/patterns_cropped2.pdf, id=831, 614.295pt x 130.086pt>
 File: Bilder/patterns_cropped2.pdf Graphic file (type pdf)
 
 <use Bilder/patterns_cropped2.pdf>
@@ -1011,20 +1011,17 @@ Overfull \hbox (43.30571pt too wide) in paragraph at lines 99--100
  []
 
 [14 <C:/Users/tuatran/Downloads/PortableGit-1.7.6-preview20110709/Seminar--Date
-nmanagement-in-der-Cloud/Bilder/patterns_cropped2.pdf>]
-
-LaTeX Warning: Citation `CHEN' on page 15 undefined on input line 112.
-
-[15] [16]
+nmanagement-in-der-Cloud/Bilder/patterns_cropped2.pdf>] [15] [16]
 LaTeX Font Info:    Try loading font information for OML+cmr on input line 127.
 
- ("C:\Program Files\MiKTex\tex\latex\base\omlcmr.fd"
+
+("C:\Program Files\MiKTex\tex\latex\base\omlcmr.fd"
 File: omlcmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OML/cmr/m/n' in size <12> not available
 (Font)              Font shape `OML/cmm/m/it' tried instead on input line 127.
 
-<Bilder/Clusterbildung.png, id=877, 988.69376pt x 311.1625pt>
+<Bilder/Clusterbildung.png, id=881, 988.69376pt x 311.1625pt>
 File: Bilder/Clusterbildung.png Graphic file (type png)
 
 <use Bilder/Clusterbildung.png> [17] [18 <C:/Users/tuatran/Downloads/PortableGi
@@ -1041,48 +1038,44 @@ Overfull \hbox (4.53561pt too wide) in paragraph at lines 222--223
 e-nen Pro-ble-me der \OT1/cmr/m/it/12 Gap\OT1/cmr/m/n/12 -Bildung
  []
 
-[22] <Bilder/AAS_Vor_Sortierung.png, id=928, 433.62pt x 127.47626pt>
+[22] <Bilder/AAS_Vor_Sortierung.png, id=931, 433.62pt x 127.47626pt>
 File: Bilder/AAS_Vor_Sortierung.png Graphic file (type png)
 
 <use Bilder/AAS_Vor_Sortierung.png>
-<Bilder/AAS_Vectorvertauschung.png, id=929, 439.6425pt x 177.66376pt>
+<Bilder/AAS_Vectorvertauschung.png, id=932, 439.6425pt x 177.66376pt>
 File: Bilder/AAS_Vectorvertauschung.png Graphic file (type png)
 
 <use Bilder/AAS_Vectorvertauschung.png>
-<Bilder/AAS_Nach_Sortierung.png, id=930, 431.6125pt x 176.66pt>
+<Bilder/AAS_Nach_Sortierung.png, id=933, 431.6125pt x 176.66pt>
 File: Bilder/AAS_Nach_Sortierung.png Graphic file (type png)
 
 <use Bilder/AAS_Nach_Sortierung.png> [23 <C:/Users/tuatran/Downloads/PortableGi
 t-1.7.6-preview20110709/Seminar--Datenmanagement-in-der-Cloud/Bilder/AAS_Vor_So
 rtierung.png> <C:/Users/tuatran/Downloads/PortableGit-1.7.6-preview20110709/Sem
 inar--Datenmanagement-in-der-Cloud/Bilder/AAS_Vectorvertauschung.png>]
-<Bilder/mergesort_variant.png, id=940, 695.59875pt x 620.3175pt>
+<Bilder/mergesort_variant.png, id=943, 695.59875pt x 620.3175pt>
 File: Bilder/mergesort_variant.png Graphic file (type png)
 
-<use Bilder/mergesort_variant.png>
-
-LaTeX Warning: Citation `GOVINDARAJU' on page 24 undefined on input line 276.
-
-[24 <C:/Users/tuatran/Downloads/PortableGit-1.7.6-preview20110709/Seminar--Date
-nmanagement-in-der-Cloud/Bilder/AAS_Nach_Sortierung.png>] [25 <C:/Users/tuatran
-/Downloads/PortableGit-1.7.6-preview20110709/Seminar--Datenmanagement-in-der-Cl
-oud/Bilder/mergesort_variant.png>] [26])
+<use Bilder/mergesort_variant.png> [24 <C:/Users/tuatran/Downloads/PortableGit-
+1.7.6-preview20110709/Seminar--Datenmanagement-in-der-Cloud/Bilder/AAS_Nach_Sor
+tierung.png>] [25 <C:/Users/tuatran/Downloads/PortableGit-1.7.6-preview20110709
+/Seminar--Datenmanagement-in-der-Cloud/Bilder/mergesort_variant.png>] [26])
 (C:\Users\tuatran\Downloads\PortableGit-1.7.6-preview20110709\Seminar--Datenman
 agement-in-der-Cloud\Ausblick.tex [27]
 Kapitel 4.
 [28
 
 ] [29]
-Overfull \hbox (62.8271pt too wide) in paragraph at lines 39--40
-\OT1/cmr/m/n/12 werk-pro-zes-sor nicht un[]ahnlich. Das in [Quel-le] er-stell-t
-e Sys-tem setzt einen Absch[]atzungsmechanismus
+Overfull \hbox (11.19423pt too wide) in paragraph at lines 39--40
+\OT1/cmr/m/n/12 wer-den k[]onne, an die-se wei-ter-zu-ge-ben. Hier-bei wird die
+ Bus-Transferrate mit ber[]ucksichtigt
  []
 
 [30])
 (C:\Users\tuatran\Downloads\PortableGit-1.7.6-preview20110709\Seminar--Datenman
 agement-in-der-Cloud\Anhang.tex) [31]
-("C:\Users\tuatran\Downloads\PortableGit-1.7.6-preview20110709\Seminar--Datenma
-nagement-in-der-Cloud\Datenmanagement in der Cloud.bbl" [32
+(C:\Users\tuatran\Downloads\PortableGit-1.7.6-preview20110709\Seminar--Datenman
+agement-in-der-Cloud\Literatur2.tex [32
 
 
 ])
@@ -1098,45 +1091,32 @@ anged.
 (rerunfilecheck)             Checksum: <no file>.
 
 
-LaTeX Warning: There were undefined references.
-
-
 LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 
  ) 
 Here is how much of TeX's memory you used:
- 10833 strings out of 494019
- 165314 string characters out of 3148236
+ 10802 strings out of 494019
+ 164886 string characters out of 3148236
  275955 words of memory out of 3000000
- 13774 multiletter control sequences out of 15000+200000
- 11956 words of font info for 45 fonts, out of 3000000 for 9000
+ 13759 multiletter control sequences out of 15000+200000
+ 11655 words of font info for 44 fonts, out of 3000000 for 9000
  714 hyphenation exceptions out of 8191
  52i,8n,58p,1379b,424s stack positions out of 5000i,500n,10000p,200000b,50000s
-pdfTeX warning (dest): name{figure.caption.30} has been referenced but does n
-ot exist, replaced by a fixed one
-
-pdfTeX warning (dest): name{figure.caption.26} has been referenced but does not
- exist, replaced by a fixed one
-
-pdfTeX warning (dest): name{figure.caption.19} has been referenced but does not
- exist, replaced by a fixed one
-
-<C:/Program Files/MiKTex/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Program 
-Files/MiKTex/fonts/type1/public/amsfonts/cm/cmbx9.pfb><C:/Program Files/MiKTex/
-fonts/type1/public/amsfonts/cm/cmcsc10.pfb><C:/Program Files/MiKTex/fonts/type1
-/public/amsfonts/cm/cmitt10.pfb><C:/Program Files/MiKTex/fonts/type1/public/ams
-fonts/cm/cmmi12.pfb><C:/Program Files/MiKTex/fonts/type1/public/amsfonts/cm/cmm
-i6.pfb><C:/Program Files/MiKTex/fonts/type1/public/amsfonts/cm/cmmi9.pfb><C:/Pr
-ogram Files/MiKTex/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Program Files/M
-iKTex/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Program Files/MiKTex/fonts/t
-ype1/public/amsfonts/cm/cmr8.pfb><C:/Program Files/MiKTex/fonts/type1/public/am
-sfonts/cm/cmr9.pfb><C:/Program Files/MiKTex/fonts/type1/public/amsfonts/cm/cmss
-bx10.pfb><C:/Program Files/MiKTex/fonts/type1/public/amsfonts/cm/cmsy9.pfb><C:/
-Program Files/MiKTex/fonts/type1/public/amsfonts/cm/cmti12.pfb><C:/Program File
-s/MiKTex/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
-Output written on "Datenmanagement in der Cloud.pdf" (33 pages, 810319 bytes).
+<C:/Program Files/MiKTex/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Progra
+m Files/MiKTex/fonts/type1/public/amsfonts/cm/cmbx9.pfb><C:/Program Files/MiKTe
+x/fonts/type1/public/amsfonts/cm/cmitt10.pfb><C:/Program Files/MiKTex/fonts/typ
+e1/public/amsfonts/cm/cmmi12.pfb><C:/Program Files/MiKTex/fonts/type1/public/am
+sfonts/cm/cmmi6.pfb><C:/Program Files/MiKTex/fonts/type1/public/amsfonts/cm/cmm
+i9.pfb><C:/Program Files/MiKTex/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Pr
+ogram Files/MiKTex/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Program Files/M
+iKTex/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Program Files/MiKTex/fonts/ty
+pe1/public/amsfonts/cm/cmr9.pfb><C:/Program Files/MiKTex/fonts/type1/public/ams
+fonts/cm/cmssbx10.pfb><C:/Program Files/MiKTex/fonts/type1/public/amsfonts/cm/c
+msy9.pfb><C:/Program Files/MiKTex/fonts/type1/public/amsfonts/cm/cmti12.pfb><C:
+/Program Files/MiKTex/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
+Output written on "Datenmanagement in der Cloud.pdf" (33 pages, 787252 bytes).
 PDF statistics:
- 1079 PDF objects out of 1200 (max. 8388607)
- 115 named destinations out of 1000 (max. 500000)
+ 1059 PDF objects out of 1200 (max. 8388607)
+ 100 named destinations out of 1000 (max. 500000)
  221 words of extra memory for PDF output out of 10000 (max. 10000000)
 

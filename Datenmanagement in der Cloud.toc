@@ -1,0 +1,22 @@
+\select@language {ngerman}
+\select@language {ngerman}
+\contentsline {chapter}{\numberline {1}Einleitung}{4}{chapter.1}
+\contentsline {section}{\numberline {1.1}Motivation}{4}{section.1.1}
+\contentsline {section}{\numberline {1.2}Ziele der Arbeit}{4}{section.1.2}
+\contentsline {section}{\numberline {1.3}Aufbau der Arbeit}{5}{section.1.3}
+\contentsline {chapter}{\numberline {2}Grundlagen}{6}{chapter.2}
+\contentsline {section}{\numberline {2.1}Multicore}{6}{section.2.1}
+\contentsline {section}{\numberline {2.2}Datenbank Operationen}{8}{section.2.2}
+\contentsline {chapter}{\numberline {3}Algorithmen}{9}{chapter.3}
+\contentsline {section}{\numberline {3.1}Minimizing Cache Conflicts (MCC-DB)}{9}{section.3.1}
+\contentsline {section}{\numberline {3.2}Parallel SQL Query Auto-Tuning on Multicore}{13}{section.3.2}
+\contentsline {section}{\numberline {3.3}Architecture Aware Hash-Join}{15}{section.3.3}
+\contentsline {section}{\numberline {3.4}Aligned Access-Sort}{20}{section.3.4}
+\contentsline {section}{\numberline {3.5}Evaluation}{26}{section.3.5}
+\contentsline {chapter}{\numberline {4}Zusammenfassung und Ausblick}{28}{chapter.4}
+\contentsline {section}{\numberline {4.1}Zusammenfassung}{28}{section.4.1}
+\contentsline {section}{\numberline {4.2}Andere Ans\IeC {\"a}tze}{29}{section.4.2}
+\contentsline {subsection}{\numberline {4.2.1}Netzwerkprozessor}{29}{subsection.4.2.1}
+\contentsline {subsection}{\numberline {4.2.2}CUDA}{30}{subsection.4.2.2}
+\contentsline {subsection}{\numberline {4.2.3}Mehrere Datenbank-Engines}{31}{subsection.4.2.3}
+\contentsline {chapter}{Literaturverzeichnis}{32}{section*.34}
