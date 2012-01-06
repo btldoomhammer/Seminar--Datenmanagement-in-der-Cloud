@@ -7,6 +7,8 @@ Im folgenden werden 4 Algorithmen ausgewählt und vorgestellt. Dabei handelt es 
 
 \section{Minimizing Cache Conflicts (MCC-DB)}
 \label{sec:MCC-DB}
+\textit{von Tuan-Si Tran}
+
 Dieser Abschnitt behandelt eine Optimierung, die auf dem Last-Level-Cache basiert \cite{LEE}. 
 
 \subsubsection*{Warum Last-Level-Cache Optimierung?}
@@ -37,10 +39,10 @@ Weak & Wenig & Wenig & Wenig \\ \hline
 \end{table}
 
 Die erste Spalte gibt die Locality Strength des Runners (zu beobachtender Prozess) und die erste Zeile die Lokalität der Co-Runners. Anhand dieser Matrix ist die Entscheidung zu treffen, welche Queries parallel ablaufen sollen. Wir sehen, dass die meiste Beeinflussung dadurch stattfindet, wenn zu einem Prozess mit Strong oder Moderate Locality ein Prozess mit schwacher Lokalität gestartet wird.
-Der Grund ist, dass schwache Lokalitäten den Cache mit vielen Daten belegen (Cache Pollution) und den Platz für andere wegnehmen, während bei zwei schwachen Lokalitäten sowieso nicht komplett in den Cache passen (Capacity Contention). Ebenso beeinflussen sich zwei starke Lokalitäten nicht, da beide von der Größe her in den Cache passen müssten ohne sich zu behindern.
+Der Grund ist, dass schwache Lokalitäten den Cache mit vielen Daten belegen (Cache Pollution) und den Platz für andere wegnehmen, während zwei schwachen Lokalitäten sowieso nicht komplett in den Cache passen (Capacity Contention). Ebenso beeinflussen sich zwei starke Lokalitäten nicht, da beide von der Größe her in den Cache passen müssten ohne sich zu behindern.
 
 \subsubsection*{Hauptkomponenten der MCC-DB}
-Die MCC-DB besteht aus drei Komponenten. Die erste Komponente ist der Query Optimizer, welcher auf dem Algorithmus der Datenbank für Zugriffspläne basiert. Zurzeit erstellen Datenbanken einen Zugriffsplan, anhand dessen Sie die Kosten für die Abfrage schätzen können. Allerdings beachtet die Abschätzung nicht mögliche Last Level Cache Konflikte bzw die Lokalität. Aus diesem Grund wird in der MCC-DB in der Entscheidung für einen Zugriffsplan noch die Lokalität beachtet. Wenn möglich, werden mehrere Zugriffspläne erstellt, deren Kosten sich nicht mehr als 30 Prozent unterscheiden.
+Die MCC-DB besteht aus drei Komponenten. Die erste Komponente ist der Query Optimizer, welche auf dem Algorithmus der Datenbank für Zugriffspläne basiert. Zurzeit erstellen Datenbanken einen Zugriffsplan, anhand dessen Sie die Kosten für die Abfrage schätzen können. Allerdings beachtet die Abschätzung nicht mögliche Last Level Cache Konflikte bzw die Lokalität. Aus diesem Grund wird in der MCC-DB in der Entscheidung für einen Zugriffsplan noch die Lokalität beachtet. Wenn möglich, werden mehrere Zugriffspläne erstellt, deren Kosten sich nicht mehr als 30 Prozent unterscheiden.
 
 Die zweite Komponente ist der Query Scheduler. Der Scheduler entscheidet nun welche Queries mit den wenigsten Konflikten nun auf den Kernen laufen sollen.
 
@@ -72,6 +74,8 @@ Wir sehen, dass ohne Cache-Partitioning bereits ein Erfolg zu sehen ist. Auf der
 
 \section{Parallel SQL Query Auto-Tuning on Multicore}
 \label{sec:Parallel-SQL-Query-Auto-Tuning}
+\textit{von Tuan-Si Tran}
+
 Der folgende Abschnitt behandelt ein evolutionäres Modell, welches sich mit jeder weiteren Iteration selbstverbessern soll. Dieser Algorithmus basiert auf dem Paper von Pankratius und Heneka \cite{PANKRATIUS}.\\
 
 Datenbanksysteme produzieren Zugriffspläne, die sequentiell abgearbeitet werden. Zur Performanzoptimierung werden zwei Implementierungen vorgenommen. Als erstes wird ein symmetrischer Hash-Join implementiert, der eine parallele Verarbeitung ermöglicht. Bei dem asymmetrischen Hash-Join wird eine Tabelle komplett gehasht und dann jeder einzelne Tupel der anderen Relationen gehasht und auf Gleichheit überprüft. Dadurch muss der zweite Hash-Prozess abwarten, bis der erste mit der Tabelle abgeschlossen hat. In der symmetrischen Implementierung werden beide Relationen parallel vollständig gehasht und dann verglichen. Somit entfällt das Warten auf den anderen Prozess.
@@ -108,6 +112,7 @@ Die Fähigkeit, sich in jeder Iteration selbst zu verbessern, ohne dass jemand e
 
 \section{Architecture Aware Hash-Join}
 \label{sec:AA-Hash-Join}
+\textit{von Christian Dirks}
 
 HashJoin ist eine der entscheidendsten Operationen in Datenbanken. Daher ist es gerade hier wichtig eine Unterstützung von Multicore Rechnern zu erschaffen, um die Leistung noch einmal anheben zu können. Mit steigender Leistungsdifferenz zwischen CPU-Geschwindigkeit und Hauptspeicher muss der HashJoin Algorithmus die Hardware Architektur berücksichtigen, also "architecture aware" werden. Der Architecture Aware Hash Join (AA-Hash Join) \cite{RASHID}\cite{GARCIA} kann sogar durch Software-Prefetching zusätzlich  noch leistungsfähiger gemacht werden. Hier baut der Algorithmus auf vorangegangene Arbeit von Chen et al \cite{CHEN} auf.
 
@@ -179,6 +184,7 @@ Der benötigte Speicher ist gerade bei der Multicore-Variante jedoch nicht zu ve
 
 \section{Aligned Access-Sort}
 \label{sec:Sort_2_AA-Sort}
+\textit{von Christian Dirks}
 
 Sortieren ist einer der wichtigen Datenbankoperationen, doch bisherige Sortierverfahren sind nur begrenzt für Multithread-Anwendungen geeignet. Der bevorzugte \textit{quicksort} zieht kaum Vorteile aus mehreren Pozessoren. Aligned-Access Sort \cite{INOUE} setzt hier auf eine andere Basis. Aligned-Access- Sort (AA-Sort) ist ein Sortieralgorithmus der sowohl Single Instruction Multiple Data (SIMD) Befehle nutzt als auch Parallelität auf Prozessebene. Er ist für die Verwendung auf Prozessoren mit geteiltem Speicher entwickelt und zielt auf die Optimierung der SIMD Befehle um optimalen Zugriff auf den Speicher zu ermöglichen.
 
