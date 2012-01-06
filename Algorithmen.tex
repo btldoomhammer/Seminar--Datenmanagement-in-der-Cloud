@@ -74,8 +74,6 @@ Wir sehen, dass ohne Cache-Partitioning bereits ein Erfolg zu sehen ist. Auf der
 
 \section{Parallel SQL Query Auto-Tuning on Multicore}
 \label{sec:Parallel-SQL-Query-Auto-Tuning}
-\textit{von Tuan-Si Tran}
-
 Der folgende Abschnitt behandelt ein evolutionäres Modell, welches sich mit jeder weiteren Iteration selbstverbessern soll. Dieser Algorithmus basiert auf dem Paper von Pankratius und Heneka \cite{PANKRATIUS}.\\
 
 Datenbanksysteme produzieren Zugriffspläne, die sequentiell abgearbeitet werden. Zur Performanzoptimierung werden zwei Implementierungen vorgenommen. Als erstes wird ein symmetrischer Hash-Join implementiert, der eine parallele Verarbeitung ermöglicht. Bei dem asymmetrischen Hash-Join wird eine Tabelle komplett gehasht und dann jeder einzelne Tupel der anderen Relationen gehasht und auf Gleichheit überprüft. Dadurch muss der zweite Hash-Prozess abwarten, bis der erste mit der Tabelle abgeschlossen hat. In der symmetrischen Implementierung werden beide Relationen parallel vollständig gehasht und dann verglichen. Somit entfällt das Warten auf den anderen Prozess.
@@ -112,7 +110,6 @@ Die Fähigkeit, sich in jeder Iteration selbst zu verbessern, ohne dass jemand e
 
 \section{Architecture Aware Hash-Join}
 \label{sec:AA-Hash-Join}
-\textit{von Christian Dirks}
 
 HashJoin ist eine der entscheidendsten Operationen in Datenbanken. Daher ist es gerade hier wichtig eine Unterstützung von Multicore Rechnern zu erschaffen, um die Leistung noch einmal anheben zu können. Mit steigender Leistungsdifferenz zwischen CPU-Geschwindigkeit und Hauptspeicher muss der HashJoin Algorithmus die Hardware Architektur berücksichtigen, also "architecture aware" werden. Der Architecture Aware Hash Join (AA-Hash Join) \cite{RASHID}\cite{GARCIA} kann sogar durch Software-Prefetching zusätzlich  noch leistungsfähiger gemacht werden. Hier baut der Algorithmus auf vorangegangene Arbeit von Chen et al \cite{CHEN} auf.
 
@@ -184,7 +181,6 @@ Der benötigte Speicher ist gerade bei der Multicore-Variante jedoch nicht zu ve
 
 \section{Aligned Access-Sort}
 \label{sec:Sort_2_AA-Sort}
-\textit{von Christian Dirks}
 
 Sortieren ist einer der wichtigen Datenbankoperationen, doch bisherige Sortierverfahren sind nur begrenzt für Multithread-Anwendungen geeignet. Der bevorzugte \textit{quicksort} zieht kaum Vorteile aus mehreren Pozessoren. Aligned-Access Sort \cite{INOUE} setzt hier auf eine andere Basis. Aligned-Access- Sort (AA-Sort) ist ein Sortieralgorithmus der sowohl Single Instruction Multiple Data (SIMD) Befehle nutzt als auch Parallelität auf Prozessebene. Er ist für die Verwendung auf Prozessoren mit geteiltem Speicher entwickelt und zielt auf die Optimierung der SIMD Befehle um optimalen Zugriff auf den Speicher zu ermöglichen.
 
@@ -292,6 +288,7 @@ Die Spezialisierung auf SIMD Befehle bedeutet jedoch, dass die Leistung ohne ent
 
 \section{Evaluation}
 \label{sec:Evaluation}
+\textit{von Tuan-Si Tran, Christian Dirks}
 In diesem Abschnitt betrachten wir noch einmal zusammenfassend die Algorithmen und betrachten den Aufwand und Nutzen.
 Die MCC-DB erreicht sehr gute Ergebnisse, sofern der Cache-Partitioner angewendet wird. Mit der MLS-Strategy kann der Performanzverlust minimal gehalten werden. Allerdings wird dazu die Hilfe des Betriebssystems benötigt. Der Cache-Partitioner funktioniert nur, wenn das OS auch abgepasst worden ist. Der Algorithmus errechnet aufgrund statischer Analysen die Optionen zur Optimierung und wendet diese mit Hilfe des Betriebssystems an.
 
